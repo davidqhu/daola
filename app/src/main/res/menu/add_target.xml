@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.who.daola.AddTargetActivity"  >
+    <item
+        android:id="@+id/add_menu_item"
+        android:actionLayout="@layout/action_bar_add"
+        android:showAsAction="always" />
+</menu>

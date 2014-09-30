@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Hello">
+
+        <SwitchPreference
+            android:key="pref_enable_notification"
+            android:title="@string/pref_title_enable_notification"
+            android:summary="@string/pref_summary_enable_notification"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

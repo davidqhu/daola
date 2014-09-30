@@ -1,0 +1,177 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/add_target_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.who.daola.AddTargetActivity"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/add_target_linerlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <EditText
+            android:id="@+id/first_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="0.5"
+            android:ems="12"
+            android:inputType="textPersonName"
+            android:text="@string/first_name" />
+
+        <EditText
+            android:id="@+id/last_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/first_name"
+            android:layout_toEndOf="@+id/first_name"
+            android:layout_toRightOf="@+id/first_name"
+            android:layout_weight="0.5"
+            android:ems="15"
+            android:inputType="textPersonName"
+            android:text="@string/last_name" />
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/nick_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/add_target_linerlayout"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="@string/nick_name" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/nick_name"
+        android:id="@+id/relativeLayout">
+
+        <TextView
+            android:id="@+id/label_fence"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/spinner_fence"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:autoText="false"
+            android:text="@string/label_fence" />
+
+        <Spinner
+            android:id="@+id/spinner_fence"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/label_fence" />
+
+
+        <RadioGroup
+            android:id="@+id/radiogroup_condition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/spinner_fence"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/label_condition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/spinner_fence"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_weight="0.25"
+                android:autoText="false"
+                android:text="@string/label_condition" />
+
+            <RadioButton
+                android:id="@+id/radioButton_enter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.25"
+                android:checked="true"
+                android:onClick="onRadioButtonClicked"
+                android:text="Enter" />
+
+            <RadioButton
+                android:id="@+id/radioButton_exit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/radioButton_enter"
+                android:layout_toEndOf="@+id/radioButton_enter"
+                android:layout_toRightOf="@+id/radioButton_enter"
+                android:layout_weight="0.25"
+                android:onClick="onRadioButtonClicked"
+                android:text="Exit" />
+
+            <RadioButton
+                android:id="@+id/radioButton_both"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/radiogroup_condition"
+                android:layout_toEndOf="@+id/radioButton_exit"
+                android:layout_toRightOf="@+id/radioButton_exit"
+                android:layout_weight="0.25"
+                android:onClick="onRadioButtonClicked"
+                android:text="both" />
+
+        </RadioGroup>
+
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/editText_expiration_datetime"
+            android:id="@+id/frameLayout">
+
+            <fragment
+                android:id="@+id/fragment_target_fence"
+                android:name="com.who.daola.FenceEditFragment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/label_expires_on"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/editText_expiration_datetime"
+            android:layout_alignParentLeft="true"
+            android:autoText="false"
+            android:text="@string/label_expires_on" />
+
+        <EditText
+            android:id="@+id/editText_expiration_datetime"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/radiogroup_condition"
+            android:layout_toEndOf="@+id/label_expires_on"
+            android:layout_toRightOf="@+id/label_expires_on"
+            android:onClick="onExpirationDateTimeClicked"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:clickable="true" />
+
+    </RelativeLayout>
+
+
+</RelativeLayout>
