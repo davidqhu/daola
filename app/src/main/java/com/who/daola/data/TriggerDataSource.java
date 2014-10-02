@@ -110,7 +110,7 @@ public class TriggerDataSource {
         Trigger.setTarget(cursor.getInt(0));
         Trigger.setFence(cursor.getInt(1));
         Trigger.setEnabled(cursor.getInt(2) == 0 ? false : true);
-        Trigger.setDuration(cursor.getInt(3));
+        Trigger.setDuration(cursor.getLong(3));
         Trigger.setTransitionType(cursor.getInt(4));
         return Trigger;
     }

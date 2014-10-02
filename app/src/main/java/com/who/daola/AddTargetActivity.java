@@ -14,9 +14,7 @@ import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -38,11 +36,14 @@ import com.who.daola.data.TriggerDataSource;
 import com.who.daola.service.FenceTriggerService;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
 
-public class AddTargetActivity extends Activity implements ActionMode.Callback{
+public class AddTargetActivity extends Activity implements ActionMode.Callback {
+
+    public static final SimpleDateFormat SIMPLE_DATE_FORMATTER = new SimpleDateFormat("MMM/dd/yyyy h:mm a");
     public static final String TAG = AddTargetActivity.class.getName();
     public static final String PARAM = "target";
     private ImageView mAddImage;
@@ -54,8 +55,8 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
     private RadioButton mRadioEnter;
     private RadioButton mRadioExit;
     private RadioButton mRadioBoth;
-    private EditText mExpirationDateTime;
-    private static Activity mActivity;
+    private EditText mExpirationDateTimeEditText;
+    private Activity mActivity;
     private TargetDataSource mTargetDS;
     private FenceDataSource mFenceDS;
     private TriggerDataSource mTriggerDS;
@@ -65,6 +66,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
     private TriggerContract.TransitionType mCondition;
     private RadioButton mSelectedRadio = null;
     private FenceEditFragment mFenceEditFragment;
+    private Calendar mExpirationDateTime = Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +83,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
         mRadioExit = (RadioButton) findViewById(R.id.radioButton_exit);
         mRadioBoth = (RadioButton) findViewById(R.id.radioButton_both);
         mRadioGroup = (RadioGroup) findViewById(R.id.radiogroup_condition);
-        mExpirationDateTime = (EditText) findViewById(R.id.editText_expiration_datetime);
+        mExpirationDateTimeEditText = (EditText) findViewById(R.id.editText_expiration_datetime);
         mSelectedRadio = mRadioEnter;
 
 
@@ -96,6 +98,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
             mLastName.setText(mTarget.getLastName());
             mNickName.setText(mTarget.getNikeName());
             mTriggers = mTriggerDS.getAllTriggersForTarget(mTarget);
+            System.out.println("target id: " + mTarget.getId());
             showTrigger(mTriggers.get(0));
         }
 
@@ -103,6 +106,10 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
     }
 
     private void showTrigger(Trigger trigger) {
+        System.out.println("duration: " + trigger.getDuration());
+        mExpirationDateTime.setTimeInMillis(trigger.getDuration());
+        mExpirationDateTimeEditText.setText(SIMPLE_DATE_FORMATTER.format(mExpirationDateTime.getTime()));
+
         int spinnerSize = mFencessSpinner.getCount();
         Fence fence = null;
         for (int i = 0; i < spinnerSize; i++) {
@@ -183,7 +190,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
                     @Override
                     protected Void doInBackground(Void... arg0) {
                         Target target = mTargetDS.createTarget(mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
-                        mTriggerDS.createTrigger(target.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, 1L, TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                        mTriggerDS.createTrigger(target.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
                         return null;
                     }
 
@@ -213,9 +220,8 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        System.out.println("previous conditon: " + mSelectedRadio.getId());
                         mTargetDS.updateTarget(mTarget.getId(), mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
-                        mTriggerDS.updateTrigger(mTarget.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, 1L, TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                        mTriggerDS.updateTrigger(mTarget.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
                         return null;
                     }
 
@@ -243,7 +249,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
     public void onExpirationDateTimeClicked(View view) {
 
         Log.i(TAG, "time editbox clicked");
-        DialogFragment newFragment = new DatePickerFragment();
+        DatePickerFragment newFragment = new DatePickerFragment();
         newFragment.show(this.getFragmentManager(), "timePicker");
     }
 
@@ -320,6 +326,16 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
         super.onPause();
     }
 
+    public void updateDate(int year, int month, int day) {
+        mExpirationDateTime.set(year, month, day);
+    }
+
+    public void updateTime(int hourOfDay, int minute) {
+        mExpirationDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        mExpirationDateTime.set(Calendar.MINUTE, minute);
+        mExpirationDateTimeEditText.setText(SIMPLE_DATE_FORMATTER.format(mExpirationDateTime.getTime()));
+    }
+
     public static class TimePickerFragment extends DialogFragment
             implements TimePickerDialog.OnTimeSetListener {
 
@@ -336,28 +352,39 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback{
         }
 
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            // Do something with the time chosen by the user
+            if (view.isShown()) {
+                ((AddTargetActivity) this.getActivity()).updateTime(hourOfDay, minute);
+            }
         }
     }
 
     public final static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
 
+        private DatePickerDialog mDatePickerDialog;
+
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current date as the default date in the picker
+            long startDate = System.currentTimeMillis() - 1000;
             final Calendar c = Calendar.getInstance();
             int year = c.get(Calendar.YEAR);
             int month = c.get(Calendar.MONTH);
             int day = c.get(Calendar.DAY_OF_MONTH);
 
             // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), this, year, month, day);
+            mDatePickerDialog = new DatePickerDialog(getActivity(), this, year, month, day);
+            mDatePickerDialog.getDatePicker().setMinDate(startDate);
+            return mDatePickerDialog;
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            DialogFragment newFragment = new TimePickerFragment();
-            newFragment.show(mActivity.getFragmentManager(), "timePicker");
+            if (view.isShown()) {
+                Log.i(TAG, "date set");
+                DialogFragment newFragment = new TimePickerFragment();
+                newFragment.show(this.getActivity().getFragmentManager(), "timePicker");
+                ((AddTargetActivity) this.getActivity()).updateDate(year, month, day);
+            }
         }
     }
 }

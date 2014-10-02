@@ -34,6 +34,7 @@ public class DbHelper extends SQLiteOpenHelper {
             + TriggerContract.TriggerEntry.COLUMN_TARGET + " integer not null references " + TargetContract.TargetEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID + "),"
             + TriggerContract.TriggerEntry.COLUMN_FENCE + " integer not null references " + FenceContract.FenceEntry.TABLE_NAME + "(" + FenceContract.FenceEntry._ID + "), "
             + TriggerContract.TriggerEntry.COLUMN_ENABLED + " integer,"
+            + TriggerContract.TriggerEntry.COLUMN_DURATION + " integer,"
             + TriggerContract.TriggerEntry.COLUMN_TRANSITION_TYPE + " integer,"
             + "primary key(" + TriggerContract.TriggerEntry.COLUMN_TARGET + "," + TriggerContract.TriggerEntry.COLUMN_FENCE + "));";
 
