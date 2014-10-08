@@ -110,7 +110,7 @@ public class AddFenceActivity extends Activity {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mDatasource.createFence(mName.getText().toString(),
+                         mDatasource.createFence(mName.getText().toString(),
                                 Double.parseDouble(mRadius.getText().toString()),
                                 Double.parseDouble(mLatitude.getText().toString()),
                                 Double.parseDouble(mLongitude.getText().toString()));

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -221,7 +222,13 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     @Override
                     protected Void doInBackground(Void... arg0) {
                         mTargetDS.updateTarget(mTarget.getId(), mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
-                        mTriggerDS.updateTrigger(mTarget.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                        Trigger trigger = mTriggerDS.updateTrigger(mTarget.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                        PendingIntent pendingIntent = FenceTriggerService.getInstance().getPendingIntent(FenceTriggerService.IntentType.DATASOURCE_UPDATE, trigger);
+                        try {
+                            pendingIntent.send();
+                        }catch (PendingIntent.CanceledException e){
+                            Log.i(TAG, "intented was cencaled");
+                        }
                         return null;
                     }
 

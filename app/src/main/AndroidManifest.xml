@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.who.daola" >
+    package="com.who.daola">
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps" >
-        </activity>
+            android:label="@string/title_activity_maps"></activity>
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -21,7 +20,7 @@
 
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,20 +29,17 @@
         </activity>
         <activity
             android:name=".AddTargetActivity"
-            android:label="@string/title_activity_add_target" >
-        </activity>
+            android:label="@string/title_activity_add_target"></activity>
         <activity
             android:name=".DetailedTargetActivity"
-            android:label="@string/title_activity_detailed_target" >
-        </activity>
+            android:label="@string/title_activity_detailed_target"></activity>
         <activity
             android:name=".AddFenceActivity"
-            android:label="@string/title_activity_add_geo_fence" >
-        </activity>
+            android:label="@string/title_activity_add_geo_fence"></activity>
 
-        <service android:name=".service.FenceTriggerService"
-            android:exported="false"
-            />
+        <service
+            android:name=".service.FenceTriggerService"
+            android:exported="false" />
         <receiver android:name=".service.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -55,13 +51,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but are recommended.
     -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 </manifest>

@@ -9,7 +9,7 @@ public class Fence implements Serializable {
 
     private long mId;
     private String mName;
-    private double mRadius;
+    private float mRadius;
     private double mLatitude;
     private double mLongitude;
 
@@ -37,11 +37,11 @@ public class Fence implements Serializable {
         this.mLatitude = latitude;
     }
 
-    public double getRadius() {
+    public float getRadius() {
         return mRadius;
     }
 
-    public void setRadius(long radius) {
+    public void setRadius(float radius) {
         this.mRadius = radius;
     }
 

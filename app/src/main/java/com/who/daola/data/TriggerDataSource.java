@@ -80,6 +80,23 @@ public class TriggerDataSource {
         database.delete(TABLE_NAME, COLUMN_TARGET + " = '" + target + "' and " + COLUMN_FENCE + "='" + fence + "'", null);
     }
 
+    public List<Trigger> getAllTriggers(){
+        List<Trigger> Triggers = new ArrayList<Trigger>();
+
+        Cursor cursor = database.query(TABLE_NAME,
+                allColumns, null, null, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Trigger Trigger = cursorToTrigger(cursor);
+            Triggers.add(Trigger);
+            cursor.moveToNext();
+        }
+        // make sure to close the cursor
+        cursor.close();
+        return Triggers;
+    }
+
     public List<Trigger> getAllTriggersForTarget(Target target) {
         return getAllTriggersForCondition(COLUMN_TARGET, Long.toString(target.getId()));
     }

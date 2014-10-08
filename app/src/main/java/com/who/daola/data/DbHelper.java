@@ -25,7 +25,7 @@ public class DbHelper extends SQLiteOpenHelper {
             + FenceContract.FenceEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID
             + " integer primary key autoincrement, "
             + FenceContract.FenceEntry.COLUMN_NAME + " text not null,"
-            + FenceContract.FenceEntry.COLUMN_RADIUS + " integer,"
+            + FenceContract.FenceEntry.COLUMN_RADIUS + " real,"
             + FenceContract.FenceEntry.COLUMN_LATITUDE + " real,"
             + FenceContract.FenceEntry.COLUMN_LONGITUDE + " real);";
 

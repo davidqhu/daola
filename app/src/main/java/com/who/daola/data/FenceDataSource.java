@@ -104,7 +104,7 @@ public class FenceDataSource {
         Fence fence = new Fence();
         fence.setId(cursor.getLong(0));
         fence.setName(cursor.getString(1));
-        fence.setRadius(cursor.getLong(2));
+        fence.setRadius(cursor.getFloat(2));
         fence.setLatitude(cursor.getFloat(3));
         fence.setLongitude(cursor.getFloat(4));
         return fence;
