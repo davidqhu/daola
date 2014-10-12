@@ -73,10 +73,11 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
     public static final int DATASOURCE_DELETE = 4;
     public static final int DATASOURCE_ADD = 5;
 
+    /**
+     * Get the service instance.
+     * @return null is returned if the service is not started.
+     */
     public static FenceTriggerService getInstance() {
-        if (mInstance == null) {
-            throw new RuntimeException("Service have not been started.");
-        }
         return mInstance;
     }
 

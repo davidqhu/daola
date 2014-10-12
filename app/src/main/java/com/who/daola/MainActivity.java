@@ -51,8 +51,11 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-        Intent startServiceIntent = new Intent(this, FenceTriggerService.class);
-        this.startService(startServiceIntent);
+
+        if (FenceTriggerService.getInstance()==null ) {
+            Intent startServiceIntent = new Intent(this, FenceTriggerService.class);
+            this.startService(startServiceIntent);
+        }
     }
 
     @Override
