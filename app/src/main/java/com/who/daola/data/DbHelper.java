@@ -38,6 +38,14 @@ public class DbHelper extends SQLiteOpenHelper {
             + TriggerContract.TriggerEntry.COLUMN_TRANSITION_TYPE + " integer,"
             + "primary key(" + TriggerContract.TriggerEntry.COLUMN_TARGET + "," + TriggerContract.TriggerEntry.COLUMN_FENCE + "));";
 
+    private static final String CREATE_TABLE_NOTIFICATION = "create table "
+            + NotificationContract.NotificationEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID
+            + " integer primary key autoincrement, "
+            + NotificationContract.NotificationEntry.COLUMN_TARGET_ID + " integer not null references " + TargetContract.TargetEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID + "),"
+            + NotificationContract.NotificationEntry.COLUMN_FENCE_ID + " integer not null references " + FenceContract.FenceEntry.TABLE_NAME + "(" + FenceContract.FenceEntry._ID + "), "
+            + NotificationContract.NotificationEntry.COLUMN_TIME + " integer,"
+            + NotificationContract.NotificationEntry.COLUMN_TRANSITION_TYPE + " integer);";
+
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -47,6 +55,7 @@ public class DbHelper extends SQLiteOpenHelper {
         database.execSQL(CREATE_TABLE_TARGET);
         database.execSQL(CREATE_TABLE_FENCE);
         database.execSQL(CREATE_TABLE_TRIGGER);
+        database.execSQL(CREATE_TABLE_NOTIFICATION);
     }
 
     @Override

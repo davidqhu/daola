@@ -19,7 +19,7 @@ import com.who.daola.service.FenceTriggerService;
 
 
 public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TargetListFragment.OnFragmentInteractionListener, FenceListFragment.OnFragmentInteractionListener, ActionMode.Callback {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TargetListFragment.OnFragmentInteractionListener, FenceListFragment.OnFragmentInteractionListener,  NotificationListFragment.OnFragmentInteractionListener, ActionMode.Callback {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -35,6 +35,7 @@ public class MainActivity extends Activity
     private int mSelectedItem;
     private TargetListFragment mTargetsFragment;
     private FenceListFragment mFencesFragment;
+    private NotificationListFragment mNotificationFragment;
     private TargetListFragment geo;
 
     @Override
@@ -50,8 +51,6 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
-
         Intent startServiceIntent = new Intent(this, FenceTriggerService.class);
         this.startService(startServiceIntent);
     }
@@ -63,7 +62,10 @@ public class MainActivity extends Activity
         mActionMode = this.startActionMode(this);
         mSelectedItem = position;
         if (position == 0) {
-            //start map fragment
+            mNotificationFragment = NotificationListFragment.newInstance();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, mNotificationFragment)
+                    .commit();
         } else if (position == 1) {
             mFencesFragment = FenceListFragment.newInstance();
             fragmentManager.beginTransaction()

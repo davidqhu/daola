@@ -14,9 +14,12 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+import android.widget.Toast;
 
 import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
+import com.who.daola.data.Notification;
+import com.who.daola.data.NotificationDataSource;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -25,17 +28,17 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link FenceListFragment.OnFragmentInteractionListener} interface
+ * {@link NotificationListFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link FenceListFragment#newInstance} factory method to
+ * Use the {@link NotificationListFragment#newInstance} factory method to
  * create an instance of this fragment.
  *
  */
-public class FenceListFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class NotificationListFragment extends Fragment  implements AbsListView.OnItemClickListener{
 
-    private static final String TAG = FenceListFragment.class.getName();
+    private static final String TAG = NotificationListFragment.class.getName();
     private OnFragmentInteractionListener mListener;
-    private FenceDataSource mDataSource;
+    private NotificationDataSource mDataSource;
     private AbsListView mListView;
     private ArrayAdapter mAdapter;
 
@@ -43,37 +46,36 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment FenceListFragment.
+     * @return A new instance of fragment NotificationListFragment.
      */
-    public static FenceListFragment newInstance() {
-        FenceListFragment fragment = new FenceListFragment();
+    public static NotificationListFragment newInstance() {
+        NotificationListFragment fragment = new NotificationListFragment();
         return fragment;
     }
-    public FenceListFragment() {
+    public NotificationListFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mDataSource = new FenceDataSource(getActivity());
+        mDataSource = new NotificationDataSource(getActivity());
         try{
             mDataSource.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
         }
 
-        List<Fence> values = mDataSource.getAllFences();
+        List<Notification> values = mDataSource.getAllNotifications();
 
-        mAdapter = new ArrayAdapter<Fence>(getActivity(),
+        mAdapter = new ArrayAdapter<Notification>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, values);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_geo_fence_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_notification_list, container, false);
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
@@ -87,7 +89,7 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_add) {
+        if (item.getItemId() == R.id.action_delete) {
             Intent intent = new Intent(getActivity(), AddFenceActivity.class);
             getActivity().startActivity(intent);
             return true;
@@ -117,14 +119,13 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            final Fence item = (Fence) parent.getItemAtPosition(position);
-            Intent intent = new Intent(getActivity(), AddFenceActivity.class);
-            intent.putExtra(AddFenceActivity.PARAM, item);
-            getActivity().startActivity(intent);
-            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            final Notification item = (Notification) parent.getItemAtPosition(position);
+//            Intent intent = new Intent(getActivity(), NotificationViewActivity.class);
+//            intent.putExtra(NotificationViewActivity.PARAM, item);
+//            getActivity().startActivity(intent);
+            Toast.makeText(this.getActivity(), "notification clicked", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     @Override
     public void onResume() {
@@ -132,14 +133,12 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
 
         // Get the Camera instance as the activity achieves full user focus
         //if (mDataSourceChanged) {
-        List<Fence> fences = mDataSource.getAllFences();
-        System.out.println("target count: " + fences.size());
+        List<Notification> fences = mDataSource.getAllNotifications();
         mAdapter.clear();
         mAdapter.addAll(fences);
         mAdapter.notifyDataSetChanged();
         //}
     }
-
 
     /**
      * This interface must be implemented by activities that contain this
@@ -155,4 +154,5 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
     }
+
 }

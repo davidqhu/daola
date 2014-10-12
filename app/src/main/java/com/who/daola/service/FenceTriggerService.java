@@ -6,7 +6,6 @@ import android.app.Service;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -23,6 +22,7 @@ import com.who.daola.MainActivity;
 import com.who.daola.R;
 import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
+import com.who.daola.data.NotificationDataSource;
 import com.who.daola.data.TargetDataSource;
 import com.who.daola.data.Trigger;
 import com.who.daola.data.TriggerContract;
@@ -39,6 +39,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         GooglePlayServicesClient.OnConnectionFailedListener,
         LocationClient.OnAddGeofencesResultListener {
 
+    private static final String TAG = FenceTriggerService.class.getName();
 
     /*
  * Define a request code to send to Google Play services
@@ -55,18 +56,22 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
     private boolean mInProgress;
 
     private static FenceTriggerService mInstance;
-    private static final String TAG = FenceTriggerService.class.getName();
+
+    private List<Trigger> mTriggersList;
+
+
     private TriggerDataSource mTriggerDS;
     private TargetDataSource mTargetDS;
     private FenceDataSource mFenceDS;
-    private List<Trigger> mTriggersList;
+    private NotificationDataSource mNotificationDS;
 
     public static final String INTENT_TYPE = "type";
 
-    public static enum IntentType {
-        FENCE_TRIGGERED, DATASOURCE_UPDATE, DATASOURCE_DELETE, DATASOURCE_ADD
-    }
-
+    public static final int ADD_FENCE = 1;
+    public static final int FENCE_TRIGGERED = 2;
+    public static final int DATASOURCE_UPDATE = 3;
+    public static final int DATASOURCE_DELETE = 4;
+    public static final int DATASOURCE_ADD = 5;
 
     public static FenceTriggerService getInstance() {
         if (mInstance == null) {
@@ -97,10 +102,14 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         if (mTriggerDS == null) {
             mTriggerDS = new TriggerDataSource(this);
         }
+        if (mNotificationDS==null){
+            mNotificationDS = new NotificationDataSource(this);
+        }
         try {
             mTargetDS.open();
             mFenceDS.open();
             mTriggerDS.open();
+            mNotificationDS.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
         }
@@ -124,22 +133,21 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
     public void doWork(final Intent intent) {
         new Thread(new Runnable() {
             public void run() {
+                int intentAction = ADD_FENCE;
+                if (intent != null && intent.getAction()!=null) {
+                    intentAction = Integer.parseInt(intent.getAction());
+                }
 
-                if (intent==null){
-                    Log.i(TAG, "Intent is null");
-                }
-                Log.i(TAG, intent.toString());
-                IntentType type = (IntentType) intent.getSerializableExtra(INTENT_TYPE);
-                if (type==null){
-                    mTriggersList = mTriggerDS.getAllTriggers();
-                    Log.i(TAG, "add geofences");
-                    addGeofences();
-                    return;
-                }
-                switch (type) {
+                switch (intentAction) {
+                    case ADD_FENCE:
+                        Log.i(TAG, "add geofences");
+                        mTriggersList = mTriggerDS.getAllTriggers();
+                        addGeofences();
+                        break;
                     case FENCE_TRIGGERED:
                         Log.i(TAG, "fence triggered");
                         showNotification();
+                        createNotificationRecord(intent);
                         break;
                     case DATASOURCE_ADD:
                         Log.i(TAG, "datasource added");
@@ -233,6 +241,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         // Build a new Geofence object
         return new Geofence.Builder()
                 .setRequestId(trigger.getFence() + "." + trigger.getTarget())
+                //TODO set the real transition
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER) //trigger.getTransitionType())
                 .setCircularRegion(
                         fence.getLatitude(), fence.getLongitude(), fence.getRadius())
@@ -240,13 +249,10 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
                 .build();
     }
 
-    public PendingIntent getPendingIntent(IntentType type, Trigger trigger) {
+    public PendingIntent getPendingIntent(int intentAction, Trigger trigger) {
         // Create an explicit Intent
         Intent intent = new Intent(this, FenceTriggerService.class);
-        intent.putExtra(INTENT_TYPE, type);
-        intent.putExtra(TriggerContract.TriggerEntry.COLUMN_FENCE, trigger.getFence());
-        intent.putExtra(TriggerContract.TriggerEntry.COLUMN_TARGET, trigger.getTarget());
-
+        intent.setAction(Integer.toString(intentAction));
         /*
          * Return the PendingIntent
          */
@@ -259,12 +265,15 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
 
     @Override
     public void onConnected(Bundle bundle) {
+        Log.i(TAG, "LocationClient is connected.");
         for (final Trigger trigger : mTriggersList) {
-            List<Geofence> fences = new ArrayList<Geofence>() {{add(toGeofence(mFenceDS.getFence(trigger.getFence()), trigger));}};
+            List<Geofence> fences = new ArrayList<Geofence>() {{
+                add(toGeofence(mFenceDS.getFence(trigger.getFence()), trigger));
+            }};
             // Send a request to add the current geofences
             mLocationClient.addGeofences(
                     fences,
-                    getPendingIntent(IntentType.FENCE_TRIGGERED, trigger), this);
+                    getPendingIntent(FENCE_TRIGGERED, trigger), this);
 
         }
     }
@@ -279,26 +288,26 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
 
     @Override
     public void onAddGeofencesResult(int statusCode, String[] geofenceRequestIds) {
-            // If adding the geofences was successful
-            if (LocationStatusCodes.SUCCESS == statusCode) {
+        // If adding the geofences was successful
+        if (LocationStatusCodes.SUCCESS == statusCode) {
             /*
              * Handle successful addition of geofences here.
              * You can send out a broadcast intent or update the UI.
              * geofences into the Intent's extended data.
              */
-                Log.i(TAG, "Geofence request added successfully for " + geofenceRequestIds[0]);
-            } else {
-                // If adding the geofences failed
+            Log.i(TAG, "Geofence request added successfully for " + geofenceRequestIds[0]);
+        } else {
+            // If adding the geofences failed
             /*
              * Report errors here.
              * You can log the error using Log.e() or update
              * the UI.
              */
-                Log.e(TAG, "Geofence request FAILED to add for " + geofenceRequestIds[0]);
-            }
-            // Turn off the in progress flag and disconnect the client
-            mInProgress = false;
-            mLocationClient.disconnect();
+            Log.e(TAG, "Geofence request FAILED to add for " + geofenceRequestIds[0]);
+        }
+        // Turn off the in progress flag and disconnect the client
+        mInProgress = false;
+        mLocationClient.disconnect();
     }
 
     @Override
@@ -318,7 +327,61 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         }
     }
 
-    private void showNotification(){
+    private void createNotificationRecord(Intent intent) {
+        // First check for errors
+        if (LocationClient.hasError(intent)) {
+            // Get the error code with a static method
+            int errorCode = LocationClient.getErrorCode(intent);
+            // Log the error
+            Log.e(TAG,
+                    "Location Services error: " +
+                            Integer.toString(errorCode));
+            /*
+             * You can also send the error code to an Activity or
+             * Fragment with a broadcast Intent
+             */
+        /*
+         * If there's no error, get the transition type and the IDs
+         * of the geofence or geofences that triggered the transition
+         */
+        } else {
+            // Get the type of transition (entry or exit)
+            int transitionType =
+                    LocationClient.getGeofenceTransition(intent);
+            Log.i(TAG, "transition type: " + transitionType);
+            // Test that a valid transition was reported
+            if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER ||
+                    transitionType == Geofence.GEOFENCE_TRANSITION_EXIT ) {
+                List<Geofence> triggerList =
+                        LocationClient.getTriggeringGeofences(intent);
+
+                String[] triggerIds = new String[triggerList.size()];
+
+                for (Geofence fence : triggerList) {
+                    long fenceId = getFenceId(fence.getRequestId());
+                    long targetId = getTargetId(fence.getRequestId());
+                    mNotificationDS.createNotification(fenceId, targetId, System.currentTimeMillis(), transitionType);
+                }
+                /*
+                 * At this point, you can store the IDs for further use
+                 * display them, or display the details associated with
+                 * them.
+                 */
+            } else {
+                Log.e(TAG, "Geofence transition error: " + Integer.toString(transitionType));
+            }
+        }
+    }
+
+    private long getFenceId(String geoFenceId) {
+        return Long.parseLong(geoFenceId.substring(0, geoFenceId.indexOf('.')));
+    }
+
+    private long getTargetId(String geoFenceId) {
+        return Long.parseLong(geoFenceId.substring(geoFenceId.indexOf('.')+1));
+    }
+
+    private void showNotification() {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_drawer)
@@ -348,7 +411,8 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         mNotificationManager.notify(getNextNotificationId(), mBuilder.build());
     }
 
-    private int getNextNotificationId(){
+
+    private int getNextNotificationId() {
         return 5;
     }
 }
