@@ -1,10 +1,10 @@
 package com.who.daola;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -19,6 +19,7 @@ import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -29,7 +30,6 @@ import java.util.List;
  * to handle interaction events.
  * Use the {@link FenceListFragment#newInstance} factory method to
  * create an instance of this fragment.
- *
  */
 public class FenceListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
@@ -49,6 +49,7 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
         FenceListFragment fragment = new FenceListFragment();
         return fragment;
     }
+
     public FenceListFragment() {
         // Required empty public constructor
     }
@@ -56,18 +57,24 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
-        mDataSource = new FenceDataSource(getActivity());
-        try{
+    private void initializeDataSources() {
+        if (mDataSource == null) {
+            mDataSource = new FenceDataSource(getActivity());
+        }
+        try {
             mDataSource.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
+            closeDataSources();
         }
+    }
 
-        List<Fence> values = mDataSource.getAllFences();
-
-        mAdapter = new ArrayAdapter<Fence>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
+    private void closeDataSources() {
+        if (mDataSource != null) {
+            mDataSource.close();
+        }
     }
 
     @Override
@@ -75,6 +82,8 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_geo_fence_list, container, false);
 
+        mAdapter = new ArrayAdapter<Fence>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList<Fence>());
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
@@ -113,6 +122,23 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        initializeDataSources();
+        List<Fence> fences = mDataSource.getAllFences();
+        mAdapter.clear();
+        mAdapter.addAll(fences);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onPause() {
+        Log.i(TAG, "closing datasources");
+        mDataSource.close();
+        super.onPause();
+    }
+
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
@@ -125,28 +151,12 @@ public class FenceListFragment extends Fragment implements AbsListView.OnItemCli
         }
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();  // Always call the superclass method first
-
-        // Get the Camera instance as the activity achieves full user focus
-        //if (mDataSourceChanged) {
-        List<Fence> fences = mDataSource.getAllFences();
-        System.out.println("target count: " + fences.size());
-        mAdapter.clear();
-        mAdapter.addAll(fences);
-        mAdapter.notifyDataSetChanged();
-        //}
-    }
-
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
+     * <p/>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.

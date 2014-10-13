@@ -1,9 +1,9 @@
 package com.who.daola;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -15,23 +15,23 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
 import com.who.daola.data.Target;
 import com.who.daola.data.TargetDataSource;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A fragment representing a list of Items.
- * <p />
+ * <p/>
  * Large screen devices (such as tablets) are supported by replacing the ListView
  * with a GridView.
- * <p />
- * Activities containing this fragment MUST implement the {@link Callbacks}
- * interface.
+ * <p/>
  */
 public class TargetListFragment extends Fragment implements AbsListView.OnItemClickListener {
+
+    public static final String TAG = TargetListFragment.class.getName();
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -56,7 +56,7 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
     private ArrayAdapter mAdapter;
     private boolean mDataSourceChanged = false;
 
-    private TargetDataSource datasource;
+    private TargetDataSource mDataSource;
 
     // TODO: Rename and change types of parameters
     public static TargetListFragment newInstance(String param1, String param2) {
@@ -78,28 +78,15 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        datasource = new TargetDataSource(getActivity());
-        try{
-            datasource.open();
-        } catch (SQLException e) {
-            Log.e("ItemFragment", "Error opening database: " + e);
-        }
-
-        List<Target> values = datasource.getAllTargets();
-
-        // TODO: Change Adapter to display your content
-//        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-//                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
-
-        mAdapter = new ArrayAdapter<Target>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
+
+        mAdapter = new ArrayAdapter<Target>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList<Target>());
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
@@ -111,18 +98,28 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
         return view;
     }
 
+    private void initializeDataSources() {
+        if (mDataSource == null) {
+            mDataSource = new TargetDataSource(getActivity());
+        }
+        try {
+            mDataSource.open();
+        } catch (SQLException e) {
+            Log.e(TAG, "Error opening database: " + e);
+            closeDataSources();
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
+        initializeDataSources();
 
-        // Get the Camera instance as the activity achieves full user focus
-        //if (mDataSourceChanged) {
-        List<Target> targets = datasource.getAllTargets();
-        System.out.println("target count: " + targets.size());
-            mAdapter.clear();
-            mAdapter.addAll(targets);
-            mAdapter.notifyDataSetChanged();
-        //}
+        List<Target> values = mDataSource.getAllTargets();
+
+        mAdapter.clear();
+        mAdapter.addAll(values);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -132,7 +129,7 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                + " must implement OnFragmentInteractionListener");
+                    + " must implement OnFragmentInteractionListener");
         }
     }
 
@@ -142,6 +139,18 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
         mListener = null;
     }
 
+    private void closeDataSources() {
+        if (mDataSource != null) {
+            mDataSource.close();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        Log.i(TAG, "closing datasources");
+        mDataSource.close();
+        super.onPause();
+    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -180,18 +189,17 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
     }
 
     /**
-    * This interface must be implemented by activities that contain this
-    * fragment to allow an interaction in this fragment to be communicated
-    * to the activity and potentially other fragments contained in that
-    * activity.
-    * <p>
-    * See the Android Training lesson <a href=
-    * "http://developer.android.com/training/basics/fragments/communicating.html"
-    * >Communicating with Other Fragments</a> for more information.
-    */
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(String id);
     }
-
 }

@@ -150,6 +150,19 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
             mTriggerDS.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
+            closeDataSources();
+        }
+    }
+
+    private void closeDataSources() {
+        if (mTargetDS != null) {
+            mTargetDS.close();
+        }
+        if (mTargetDS != null) {
+            mFenceDS.close();
+        }
+        if (mTriggerDS != null) {
+            mTriggerDS.close();
         }
     }
 
@@ -199,13 +212,13 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     protected void onPostExecute(Void result) {
                         Toast.makeText(getApplicationContext(), "added",
                                 Toast.LENGTH_SHORT).show();
+                        mActivity.finish();
                     }
 
                     @Override
                     protected void onPreExecute() {
                     }
                 }.execute((Void) null);
-                mActivity.finish();
             }
         });
         return view;
@@ -226,7 +239,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                         PendingIntent pendingIntent = FenceTriggerService.getInstance().getPendingIntent(FenceTriggerService.DATASOURCE_UPDATE, trigger);
                         try {
                             pendingIntent.send();
-                        }catch (PendingIntent.CanceledException e){
+                        } catch (PendingIntent.CanceledException e) {
                             Log.i(TAG, "intented was cencaled");
                         }
                         return null;
@@ -236,14 +249,15 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     protected void onPostExecute(Void result) {
                         Toast.makeText(getApplicationContext(), "saved",
                                 Toast.LENGTH_SHORT).show();
+                        FenceTriggerService.getInstance().updateDataSource();
+                        mActivity.finish();
                     }
 
                     @Override
                     protected void onPreExecute() {
                     }
                 }.execute((Void) null);
-                FenceTriggerService.getInstance().updateDataSource();
-                mActivity.finish();
+
             }
         });
         return view;
@@ -327,9 +341,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     @Override
     protected void onPause() {
         Log.i(TAG, "closing datasources");
-        mTargetDS.close();
-        mFenceDS.close();
-        mTriggerDS.close();
+        closeDataSources();
         super.onPause();
     }
 

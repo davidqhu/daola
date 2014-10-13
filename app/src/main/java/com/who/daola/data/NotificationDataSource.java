@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.provider.BaseColumns._ID;
-import static com.who.daola.data.NotificationContract.NotificationEntry.TABLE_NAME;
-import static com.who.daola.data.NotificationContract.NotificationEntry.COLUMN_TIME;
-import static com.who.daola.data.NotificationContract.NotificationEntry.COLUMN_TRANSITION_TYPE;
 import static com.who.daola.data.NotificationContract.NotificationEntry.COLUMN_FENCE_ID;
 import static com.who.daola.data.NotificationContract.NotificationEntry.COLUMN_TARGET_ID;
+import static com.who.daola.data.NotificationContract.NotificationEntry.COLUMN_TIME;
+import static com.who.daola.data.NotificationContract.NotificationEntry.COLUMN_TRANSITION_TYPE;
+import static com.who.daola.data.NotificationContract.NotificationEntry.TABLE_NAME;
 
 /**
  * Created by dave on 10/7/2014.
@@ -66,10 +66,13 @@ public class NotificationDataSource {
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, _ID + " = " + id, null,
                 null, null, null);
-        cursor.moveToFirst();
-        Notification Notification = cursorToNotification(cursor);
-        cursor.close();
-        return Notification;
+        try {
+            cursor.moveToFirst();
+            Notification Notification = cursorToNotification(cursor);
+            return Notification;
+        } finally {
+            cursor.close();
+        }
     }
 
     public void deleteNotification(Notification Notification) {
@@ -84,16 +87,17 @@ public class NotificationDataSource {
 
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, null, null, null, null, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Notification Notification = cursorToNotification(cursor);
-            Notifications.add(Notification);
-            cursor.moveToNext();
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Notification Notification = cursorToNotification(cursor);
+                Notifications.add(Notification);
+                cursor.moveToNext();
+            }
+            return Notifications;
+        } finally {
+            cursor.close();
         }
-        // make sure to close the cursor
-        cursor.close();
-        return Notifications;
     }
 
     private Notification cursorToNotification(Cursor cursor) {

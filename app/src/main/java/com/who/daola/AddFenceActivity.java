@@ -52,15 +52,33 @@ public class AddFenceActivity extends Activity {
         }
         restoreActionBar(mFence != null);
 
-        mDatasource = new FenceDataSource(this);
+        mActivity = this;
+    }
+
+    private void initializeDataSources() {
+        if (mDatasource == null) {
+            mDatasource = new FenceDataSource(this);
+        }
         try {
             mDatasource.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
+            mDatasource.close();
         }
-        mActivity = this;
     }
 
+    @Override
+    protected void onResume() {
+        initializeDataSources();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "closing datasources");
+        mDatasource.close();
+        super.onPause();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -110,7 +128,7 @@ public class AddFenceActivity extends Activity {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                         mDatasource.createFence(mName.getText().toString(),
+                        mDatasource.createFence(mName.getText().toString(),
                                 Double.parseDouble(mRadius.getText().toString()),
                                 Double.parseDouble(mLatitude.getText().toString()),
                                 Double.parseDouble(mLongitude.getText().toString()));
@@ -121,13 +139,14 @@ public class AddFenceActivity extends Activity {
                     protected void onPostExecute(Void result) {
                         Toast.makeText(getApplicationContext(), "fence added",
                                 Toast.LENGTH_SHORT).show();
+                        mActivity.finish();
                     }
 
                     @Override
                     protected void onPreExecute() {
                     }
                 }.execute((Void) null);
-                mActivity.finish();
+
             }
         });
         return view;
@@ -154,13 +173,13 @@ public class AddFenceActivity extends Activity {
                     protected void onPostExecute(Void result) {
                         Toast.makeText(getApplicationContext(), "fence saved",
                                 Toast.LENGTH_SHORT).show();
+                        mActivity.finish();
                     }
 
                     @Override
                     protected void onPreExecute() {
                     }
                 }.execute((Void) null);
-                mActivity.finish();
             }
         });
         return view;

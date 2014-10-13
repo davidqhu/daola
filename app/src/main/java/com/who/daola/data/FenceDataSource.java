@@ -70,10 +70,13 @@ public class FenceDataSource {
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, _ID + " = " + id, null,
                 null, null, null);
-        cursor.moveToFirst();
-        Fence fence = cursorToFence(cursor);
-        cursor.close();
-        return fence;
+        try {
+            cursor.moveToFirst();
+            Fence fence = cursorToFence(cursor);
+            return fence;
+        } finally{
+            cursor.close();
+        }
     }
 
     public void deleteFence(Fence fence) {
@@ -88,16 +91,17 @@ public class FenceDataSource {
 
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, null, null, null, null, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Fence fence = cursorToFence(cursor);
-            fences.add(fence);
-            cursor.moveToNext();
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Fence fence = cursorToFence(cursor);
+                fences.add(fence);
+                cursor.moveToNext();
+            }
+            return fences;
+        } finally {
+            cursor.close();
         }
-        // make sure to close the cursor
-        cursor.close();
-        return fences;
     }
 
     private Fence cursorToFence(Cursor cursor) {

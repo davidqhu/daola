@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_FIRSTNAME;
-import static com.who.daola.data.TargetContract.TargetEntry._ID;
 import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_LASTNAME;
 import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_NICKNAME;
 import static com.who.daola.data.TargetContract.TargetEntry.TABLE_NAME;
+import static com.who.daola.data.TargetContract.TargetEntry._ID;
 
 /**
  * Target Data Source
@@ -71,10 +71,13 @@ public class TargetDataSource {
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, _ID + " = " + id, null,
                 null, null, null);
-        cursor.moveToFirst();
-        Target people = cursorToTarget(cursor);
-        cursor.close();
-        return people;
+        try {
+            cursor.moveToFirst();
+            Target people = cursorToTarget(cursor);
+            return people;
+        } finally {
+            cursor.close();
+        }
     }
 
     public void deletePeople(Target People) {
@@ -90,15 +93,17 @@ public class TargetDataSource {
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, null, null, null, null, null);
 
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Target target = cursorToTarget(cursor);
-            targets.add(target);
-            cursor.moveToNext();
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Target target = cursorToTarget(cursor);
+                targets.add(target);
+                cursor.moveToNext();
+            }
+            return targets;
+        } finally {
+            cursor.close();
         }
-        // make sure to close the cursor
-        cursor.close();
-        return targets;
     }
 
     private Target cursorToTarget(Cursor cursor) {

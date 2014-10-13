@@ -1,10 +1,10 @@
 package com.who.daola;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -16,12 +16,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.Toast;
 
-import com.who.daola.data.Fence;
-import com.who.daola.data.FenceDataSource;
 import com.who.daola.data.Notification;
 import com.who.daola.data.NotificationDataSource;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -32,9 +31,8 @@ import java.util.List;
  * to handle interaction events.
  * Use the {@link NotificationListFragment#newInstance} factory method to
  * create an instance of this fragment.
- *
  */
-public class NotificationListFragment extends Fragment  implements AbsListView.OnItemClickListener{
+public class NotificationListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     private static final String TAG = NotificationListFragment.class.getName();
     private OnFragmentInteractionListener mListener;
@@ -52,6 +50,7 @@ public class NotificationListFragment extends Fragment  implements AbsListView.O
         NotificationListFragment fragment = new NotificationListFragment();
         return fragment;
     }
+
     public NotificationListFragment() {
         // Required empty public constructor
     }
@@ -59,23 +58,14 @@ public class NotificationListFragment extends Fragment  implements AbsListView.O
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mDataSource = new NotificationDataSource(getActivity());
-        try{
-            mDataSource.open();
-        } catch (SQLException e) {
-            Log.e(TAG, "Error opening database: " + e);
-        }
-
-        List<Notification> values = mDataSource.getAllNotifications();
-
-        mAdapter = new ArrayAdapter<Notification>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_notification_list, container, false);
+        mAdapter = new ArrayAdapter<Notification>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList<Notification>());
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
@@ -114,6 +104,19 @@ public class NotificationListFragment extends Fragment  implements AbsListView.O
         mListener = null;
     }
 
+    private void closeDataSources() {
+        if (mDataSource != null) {
+            mDataSource.close();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        Log.i(TAG, "closing datasources");
+        mDataSource.close();
+        super.onPause();
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
@@ -127,17 +130,35 @@ public class NotificationListFragment extends Fragment  implements AbsListView.O
         }
     }
 
+    private void initializeDataSources() {
+        if (mDataSource == null) {
+            mDataSource = new NotificationDataSource(getActivity());
+        }
+        try {
+            mDataSource.open();
+        } catch (SQLException e) {
+            Log.e(TAG, "Error opening database: " + e);
+            closeDataSources();
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
 
-        // Get the Camera instance as the activity achieves full user focus
-        //if (mDataSourceChanged) {
-        List<Notification> fences = mDataSource.getAllNotifications();
+        initializeDataSources();
+        List<Notification> values = mDataSource.getAllNotifications();
         mAdapter.clear();
-        mAdapter.addAll(fences);
+        mAdapter.addAll(values);
         mAdapter.notifyDataSetChanged();
-        //}
+        //
+//        // Get the Camera instance as the activity achieves full user focus
+//        //if (mDataSourceChanged) {
+//        List<Notification> fences = mDataSource.getAllNotifications();
+//        mAdapter.clear();
+//        mAdapter.addAll(fences);
+//        mAdapter.notifyDataSetChanged();
+//        //}
     }
 
     /**
@@ -145,7 +166,7 @@ public class NotificationListFragment extends Fragment  implements AbsListView.O
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
+     * <p/>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.

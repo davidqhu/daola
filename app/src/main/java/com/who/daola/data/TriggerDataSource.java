@@ -67,10 +67,13 @@ public class TriggerDataSource {
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, COLUMN_TARGET + " = '" + target + "' and " + COLUMN_FENCE + "='" + fence + "'", null,
                 null, null, null);
-        cursor.moveToFirst();
-        Trigger people = cursorToTrigger(cursor);
-        cursor.close();
-        return people;
+        try {
+            cursor.moveToFirst();
+            Trigger people = cursorToTrigger(cursor);
+            return people;
+        } finally {
+            cursor.close();
+        }
     }
 
     public void deleteTrigger(Trigger trigger) {
@@ -80,21 +83,22 @@ public class TriggerDataSource {
         database.delete(TABLE_NAME, COLUMN_TARGET + " = '" + target + "' and " + COLUMN_FENCE + "='" + fence + "'", null);
     }
 
-    public List<Trigger> getAllTriggers(){
+    public List<Trigger> getAllTriggers() {
         List<Trigger> Triggers = new ArrayList<Trigger>();
 
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, null, null, null, null, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Trigger Trigger = cursorToTrigger(cursor);
-            Triggers.add(Trigger);
-            cursor.moveToNext();
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Trigger Trigger = cursorToTrigger(cursor);
+                Triggers.add(Trigger);
+                cursor.moveToNext();
+            }
+            return Triggers;
+        } finally {
+            cursor.close();
         }
-        // make sure to close the cursor
-        cursor.close();
-        return Triggers;
     }
 
     public List<Trigger> getAllTriggersForTarget(Target target) {
@@ -110,16 +114,17 @@ public class TriggerDataSource {
 
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, column + " = '" + value + "'", null, null, null, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Trigger Trigger = cursorToTrigger(cursor);
-            Triggers.add(Trigger);
-            cursor.moveToNext();
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Trigger Trigger = cursorToTrigger(cursor);
+                Triggers.add(Trigger);
+                cursor.moveToNext();
+            }
+            return Triggers;
+        } finally {
+            cursor.close();
         }
-        // make sure to close the cursor
-        cursor.close();
-        return Triggers;
     }
 
     private Trigger cursorToTrigger(Cursor cursor) {

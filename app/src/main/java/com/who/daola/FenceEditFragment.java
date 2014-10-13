@@ -53,7 +53,6 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mLocationClient = new LocationClient(getActivity(), this, this);
-
     }
 
     @Override

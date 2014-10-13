@@ -2,7 +2,6 @@ package com.who.daola;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.who.daola.data.Target;
 import com.who.daola.data.TargetDataSource;
@@ -19,6 +17,7 @@ import java.sql.SQLException;
 
 public class DetailedTargetActivity extends Activity {
 
+    public final String TAG = DetailedTargetActivity.class.getName();
     private Target mTarget;
     private TargetDataSource mDatasource;
     private TextView mFirstName;
@@ -36,15 +35,9 @@ public class DetailedTargetActivity extends Activity {
         mLastName = (TextView) findViewById(R.id.last_name_textview);
         mNickName = (TextView) findViewById(R.id.nick_name_textview);
         updateTextViews();
-        mDatasource = new TargetDataSource(this);
-        try{
-            mDatasource.open();
-        } catch (SQLException e) {
-            Log.e("ItemFragment", "Error opening database: " + e);
-        }
     }
 
-    private void updateTextViews(){
+    private void updateTextViews() {
         mFirstName.setText(mTarget.getFirstName());
         mLastName.setText(mTarget.getLastName());
         mNickName.setText(mTarget.getNikeName());
@@ -57,11 +50,35 @@ public class DetailedTargetActivity extends Activity {
         return true;
     }
 
+    private void initializeDataSources() {
+        if(mDatasource==null) {
+            mDatasource = new TargetDataSource(this);
+        }
+        try {
+            mDatasource.open();
+        } catch (SQLException e) {
+            Log.e(TAG, "Error opening database: " + e);
+            if (mDatasource != null) {
+                mDatasource.close();
+            }
+        }
+    }
+
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
+        initializeDataSources();
         mTarget = mDatasource.getTarget(mTarget.getId());
         updateTextViews();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "closing datasources");
+        if (mDatasource != null) {
+            mDatasource.close();
+        }
+        super.onPause();
     }
 
     @Override
@@ -75,7 +92,7 @@ public class DetailedTargetActivity extends Activity {
             intent.putExtra("target", mTarget);
             startActivity(intent);
             return true;
-        } else if (item.getItemId() == R.id.action_delete && mTarget!=null) {
+        } else if (item.getItemId() == R.id.action_delete && mTarget != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.dialog_delete_target_message)
                     .setTitle(R.string.dialog_delete_target_title);
