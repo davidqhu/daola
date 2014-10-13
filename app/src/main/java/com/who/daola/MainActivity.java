@@ -21,6 +21,7 @@ import com.who.daola.service.FenceTriggerService;
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TargetListFragment.OnFragmentInteractionListener, FenceListFragment.OnFragmentInteractionListener,  NotificationListFragment.OnFragmentInteractionListener, ActionMode.Callback {
 
+    public static final String TAG = MainActivity.class.getName();
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -45,6 +46,7 @@ public class MainActivity extends Activity
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
+
         mTitle = getTitle();
 
         // Set up the drawer.
@@ -64,6 +66,8 @@ public class MainActivity extends Activity
         FragmentManager fragmentManager = getFragmentManager();
         mActionMode = this.startActionMode(this);
         mSelectedItem = position;
+        onSectionAttached(mSelectedItem);
+        restoreActionBar();
         if (position == 0) {
             mNotificationFragment = NotificationListFragment.newInstance();
             fragmentManager.beginTransaction()
@@ -74,6 +78,7 @@ public class MainActivity extends Activity
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mFencesFragment)
                     .commit();
+            setTitle(mTitle);
         } else if (position == 2) {
             mTargetsFragment = TargetListFragment.newInstance("hello", "world");
             fragmentManager.beginTransaction()
@@ -88,15 +93,21 @@ public class MainActivity extends Activity
 
     public void onSectionAttached(int number) {
         switch (number) {
+            case 0:
+                mTitle = getString(R.string.title_notifications);
+
+                break;
             case 1:
-                mTitle = getString(R.string.title_section1);
+                mTitle = getString(R.string.title_fences);
                 break;
             case 2:
-                mTitle = getString(R.string.title_section2);
+                mTitle = getString(R.string.title_targets);
                 break;
             case 3:
-                mTitle = getString(R.string.title_section3);
+                mTitle = getString(R.string.title_settings);
                 break;
+            default:
+                mTitle = getString(R.string.title_activity_main);
         }
     }
 
