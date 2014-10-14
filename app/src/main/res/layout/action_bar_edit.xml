@@ -14,7 +14,7 @@
         android:contentDescription="Save"
         android:focusable="true"
         android:gravity="center_vertical"
-        android:src="@android:drawable/ic_input_add" />
+        android:src="@drawable/ic_action_done" />
 
     <TextView
         android:id="@+id/add_target_text"

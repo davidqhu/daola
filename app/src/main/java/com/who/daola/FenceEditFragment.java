@@ -73,6 +73,7 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
             LatLng here = new LatLng(Double.parseDouble(mLatitude.getText().toString()),
                     Double.parseDouble(mLongitude.getText().toString()));
             setMarker(here, mName.getText().toString());
+            drawCircle(here, Double.parseDouble(mRadius.getText().toString()));
         }
     }
 
@@ -111,6 +112,9 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
         if (this.getMap() != null) {
 
             if (here != null) {
+                if (mMarker != null) {
+                    mMarker.remove();
+                }
                 mMarker = this.getMap().addMarker(new MarkerOptions().position(here)
                         .title(name));
                 // Move the camera instantly to hamburg with a zoom of 15.
@@ -236,6 +240,9 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
 
             mLatitude.setText(Double.toString(latLng.latitude));
             mLongitude.setText(Double.toString(latLng.longitude));
+        }
+        if (mRadius.getText().length()>0) {
+            drawCircle(latLng, Double.parseDouble(mRadius.getText().toString()));
         }
     }
 
