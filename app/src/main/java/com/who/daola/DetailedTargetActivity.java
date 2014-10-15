@@ -10,8 +10,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.who.daola.data.NotificationDataSource;
 import com.who.daola.data.Target;
 import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TriggerDataSource;
 
 import java.sql.SQLException;
 
@@ -19,7 +21,9 @@ public class DetailedTargetActivity extends Activity {
 
     public final String TAG = DetailedTargetActivity.class.getName();
     private Target mTarget;
-    private TargetDataSource mDatasource;
+    private TargetDataSource mTargetDS;
+    private TriggerDataSource mTriggerDS;
+    private NotificationDataSource mNotificationDS;
     private TextView mFirstName;
     private TextView mLastName;
     private TextView mNickName;
@@ -51,16 +55,35 @@ public class DetailedTargetActivity extends Activity {
     }
 
     private void initializeDataSources() {
-        if(mDatasource==null) {
-            mDatasource = new TargetDataSource(this);
+        if (mTargetDS == null) {
+            mTargetDS = new TargetDataSource(this);
+        }
+        if (mTriggerDS == null) {
+            mTriggerDS = new TriggerDataSource(this);
+        }
+        if (mNotificationDS == null) {
+            mNotificationDS = new NotificationDataSource(this);
         }
         try {
-            mDatasource.open();
+            mTargetDS.open();
+            mTriggerDS.open();
+            mNotificationDS.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
-            if (mDatasource != null) {
-                mDatasource.close();
-            }
+            closeDataSources();
+        }
+    }
+
+    private void closeDataSources() {
+        Log.i(TAG, "closing datasources");
+        if (mTargetDS != null) {
+            mTargetDS.close();
+        }
+        if (mTriggerDS != null) {
+            mTriggerDS.close();
+        }
+        if (mNotificationDS != null) {
+            mNotificationDS.close();
         }
     }
 
@@ -68,17 +91,14 @@ public class DetailedTargetActivity extends Activity {
     public void onResume() {
         super.onResume();
         initializeDataSources();
-        mTarget = mDatasource.getTarget(mTarget.getId());
+        mTarget = mTargetDS.getTarget(mTarget.getId());
         updateTextViews();
     }
 
     @Override
     protected void onPause() {
-        Log.i(TAG, "closing datasources");
-        if (mDatasource != null) {
-            mDatasource.close();
-        }
         super.onPause();
+        closeDataSources();
     }
 
     @Override
@@ -95,11 +115,13 @@ public class DetailedTargetActivity extends Activity {
         } else if (item.getItemId() == R.id.action_delete && mTarget != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.dialog_delete_target_message)
-                    .setTitle(R.string.dialog_delete_target_title);
+                    .setTitle(R.string.dialog_delete_title);
             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     // User clicked OK button
-                    mDatasource.deletePeople(mTarget);
+                    mTargetDS.deletePeople(mTarget);
+                    mTriggerDS.deleteTriggerByTarget(mTarget.getId());
+                    mNotificationDS.deleteNotificationByTarget(mTarget.getId());
                     finish();
                 }
             });

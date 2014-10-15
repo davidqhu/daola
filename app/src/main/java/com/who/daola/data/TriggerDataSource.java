@@ -22,6 +22,8 @@ import static com.who.daola.data.TriggerContract.TriggerEntry.TABLE_NAME;
  */
 public class TriggerDataSource {
 
+    public static final String TAG = TriggerDataSource.class.getName();
+
     // Database fields
     private SQLiteDatabase database;
     private DbHelper dbHelper;
@@ -76,10 +78,20 @@ public class TriggerDataSource {
         }
     }
 
+    public void deleteTriggerByTarget(long target) {
+        Log.i(TAG, String.format("Trigger deleted with target: %s", target));
+        database.delete(TABLE_NAME, COLUMN_TARGET + " = " + target, null);
+    }
+
+    public void deleteTriggerByFence(long fence) {
+        Log.i(TAG, String.format("Trigger deleted with fence: %s", fence));
+        database.delete(TABLE_NAME, COLUMN_FENCE + " = " + fence, null);
+    }
+
     public void deleteTrigger(Trigger trigger) {
         long target = trigger.getTarget();
         long fence = trigger.getFence();
-        Log.i("TriggerDataSource", String.format("Trigger deleted with target: %s and fence: %s", target, fence));
+        Log.i(TAG, String.format("Trigger deleted with target: %s and fence: %s", target, fence));
         database.delete(TABLE_NAME, COLUMN_TARGET + " = '" + target + "' and " + COLUMN_FENCE + "='" + fence + "'", null);
     }
 

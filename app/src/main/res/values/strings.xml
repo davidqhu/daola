@@ -31,8 +31,9 @@
     <string name="geofence_long_label">Longitude: </string>
     <string name="geofence_lat_label">Latitude: </string>
 
-    <string name="dialog_delete_target_message">Delete this target?</string>
-    <string name="dialog_delete_target_title">Delete Confirmation</string>
+    <string name="dialog_delete_fence_message">Delete this fence? All notification triggered by the fence will also be deleted.</string>
+    <string name="dialog_delete_target_message">Delete this target? All notification triggered for this target will also be deleted.</string>
+    <string name="dialog_delete_title">Delete Confirmation</string>
     <string name="dialog_add_target_alert_title">Alert</string>
     <string name="dialog_add_target_alert_message">Target will be saved without a fence. But you can always add one more fences to the target later.</string>
     <string name="ok">OK</string>

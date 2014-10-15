@@ -3,6 +3,7 @@
     tools:context="com.who.daola.AddFenceActivity" >
     <item android:id="@+id/action_delete"
         android:icon="@drawable/ic_action_delete"
+        android:onClick="onDeleteMenuClicked"
         android:title="@string/action_delete"
         android:showAsAction="withText|ifRoom" />
 </menu>

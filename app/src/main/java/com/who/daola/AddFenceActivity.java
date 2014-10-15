@@ -2,6 +2,8 @@ package com.who.daola;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +17,8 @@ import android.widget.Toast;
 
 import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
+import com.who.daola.data.NotificationDataSource;
+import com.who.daola.data.TriggerDataSource;
 
 import java.sql.SQLException;
 
@@ -29,7 +33,9 @@ public class AddFenceActivity extends Activity {
     private EditText mLatitude;
     private EditText mRadius;
     private EditText mName;
-    private FenceDataSource mDatasource;
+    private FenceDataSource mFenceDS;
+    private TriggerDataSource mTriggerDS;
+    private NotificationDataSource mNotificationDS;
     private Activity mActivity;
     private Fence mFence;
     public static final String PARAM = "fence";
@@ -52,21 +58,42 @@ public class AddFenceActivity extends Activity {
         }
         restoreActionBar(mFence != null);
 
+
         mActivity = this;
     }
 
     private void initializeDataSources() {
-        if (mDatasource == null) {
-            mDatasource = new FenceDataSource(this);
+        if (mFenceDS == null) {
+            mFenceDS = new FenceDataSource(this);
+        }
+        if (mTriggerDS == null) {
+            mTriggerDS = new TriggerDataSource(this);
+        }
+        if (mNotificationDS == null) {
+            mNotificationDS = new NotificationDataSource(this);
         }
         try {
-            mDatasource.open();
+            mFenceDS.open();
+            mTriggerDS.open();
+            mNotificationDS.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
-            mDatasource.close();
+            closeDataSources();
         }
     }
 
+    private void closeDataSources(){
+        Log.i(TAG, "closing datasources");
+        if (mFenceDS != null){
+            mFenceDS.close();
+        }
+        if (mTriggerDS != null) {
+            mTriggerDS.close();
+        }
+        if (mNotificationDS != null) {
+            mNotificationDS.close();
+        }
+    }
     @Override
     protected void onResume() {
         initializeDataSources();
@@ -75,15 +102,17 @@ public class AddFenceActivity extends Activity {
 
     @Override
     protected void onPause() {
-        Log.i(TAG, "closing datasources");
-        mDatasource.close();
         super.onPause();
+        closeDataSources();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.add_geo_fence, menu);
+        if(mFence==null) {
+            menu.findItem(R.id.action_delete).setVisible(false);
+        }
         return true;
     }
 
@@ -113,9 +142,9 @@ public class AddFenceActivity extends Activity {
             customActionBar = getEditActionBarView();
         } else {
             customActionBar = getAddActionBarView();
+
         }
         actionBar.setCustomView(customActionBar, lp1);
-
     }
 
     private View getAddActionBarView() {
@@ -128,7 +157,7 @@ public class AddFenceActivity extends Activity {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mDatasource.createFence(mName.getText().toString(),
+                        mFenceDS.createFence(mName.getText().toString(),
                                 Double.parseDouble(mRadius.getText().toString()),
                                 Double.parseDouble(mLatitude.getText().toString()),
                                 Double.parseDouble(mLongitude.getText().toString()));
@@ -162,7 +191,7 @@ public class AddFenceActivity extends Activity {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mDatasource.updateFence(mFence.getId(), mName.getText().toString(),
+                        mFenceDS.updateFence(mFence.getId(), mName.getText().toString(),
                                 Double.parseDouble(mRadius.getText().toString()),
                                 Double.parseDouble(mLatitude.getText().toString()),
                                 Double.parseDouble(mLongitude.getText().toString()));
@@ -183,5 +212,28 @@ public class AddFenceActivity extends Activity {
             }
         });
         return view;
+    }
+
+    public void onDeleteMenuClicked(MenuItem menu){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_delete_fence_message)
+                .setTitle(R.string.dialog_delete_title);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+                mFenceDS.deleteFence(mFence);
+                mTriggerDS.deleteTriggerByFence(mFence.getId());
+                mNotificationDS.deleteNotificationByFence(mFence.getId());
+                finish();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
     }
 }

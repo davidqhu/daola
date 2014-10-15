@@ -355,12 +355,13 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
                     transitionType == Geofence.GEOFENCE_TRANSITION_EXIT ) {
                 List<Geofence> triggerList =
                         LocationClient.getTriggeringGeofences(intent);
-
+                Log.i(TAG, "triggered fence count: " + triggerList.size());
                 String[] triggerIds = new String[triggerList.size()];
 
                 for (Geofence fence : triggerList) {
                     long fenceId = getFenceId(fence.getRequestId());
                     long targetId = getTargetId(fence.getRequestId());
+                    Log.i(TAG, "fence triggered: " + fenceId + " target id: " + targetId);
                     mNotificationDS.createNotification(fenceId, targetId, System.currentTimeMillis(), transitionType);
                 }
                 /*

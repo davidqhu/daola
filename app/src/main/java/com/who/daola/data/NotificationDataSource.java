@@ -82,6 +82,18 @@ public class NotificationDataSource {
                 + " = " + id, null);
     }
 
+    public void deleteNotificationByTarget(long target) {
+        Log.i(TAG, "Notification deleted with target id: " + target);
+        database.delete(TABLE_NAME, COLUMN_TARGET_ID
+                + " = " + target, null);
+    }
+
+    public void deleteNotificationByFence(long fence) {
+        Log.i(TAG, "Notification deleted with fence id: " + fence);
+        database.delete(TABLE_NAME, COLUMN_FENCE_ID
+                + " = " + fence, null);
+    }
+
     public List<Notification> getAllNotifications() {
         List<Notification> Notifications = new ArrayList<Notification>();
 
