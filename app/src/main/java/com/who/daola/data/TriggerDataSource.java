@@ -140,6 +140,9 @@ public class TriggerDataSource {
     }
 
     private Trigger cursorToTrigger(Cursor cursor) {
+        if (cursor.getCount()==0){
+            return null;
+        }
         Trigger Trigger = new Trigger();
         Trigger.setTarget(cursor.getInt(0));
         Trigger.setFence(cursor.getInt(1));

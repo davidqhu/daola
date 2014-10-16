@@ -87,12 +87,6 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         mExpirationDateTimeEditText = (EditText) findViewById(R.id.editText_expiration_datetime);
         mSelectedRadio = mRadioEnter;
 
-
-        ArrayAdapter<Fence> adapter = new ArrayAdapter<Fence>(this,
-                android.R.layout.simple_spinner_item, mFenceDS.getAllFences());
-
-        mFencessSpinner.setAdapter(adapter);
-
         restoreActionBar(mTarget != null);
         if (mTarget != null) {
             mFirstName.setText(mTarget.getFirstName());
@@ -205,7 +199,9 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     @Override
                     protected Void doInBackground(Void... arg0) {
                         Target target = mTargetDS.createTarget(mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
-                        mTriggerDS.createTrigger(target.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                        if (!mFenceDS.getAllFences().isEmpty()) {
+                            mTriggerDS.createTrigger(target.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                        }
                         return null;
                     }
 
@@ -238,7 +234,14 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                         mTargetDS.updateTarget(mTarget.getId(), mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
                         // A target can have no fence associated to it
                         if (!mFenceDS.getAllFences().isEmpty()) {
-                            Trigger trigger = mTriggerDS.updateTrigger(mTarget.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                            long fenceId = ((Fence) mFencessSpinner.getSelectedItem()).getId();
+                            long targetId = mTarget.getId();
+                            Trigger trigger = null;
+                            if (mTriggerDS.getTrigger(targetId, fenceId) == null) {
+                                mTriggerDS.createTrigger(targetId, fenceId, true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                            } else {
+                                trigger = mTriggerDS.updateTrigger(targetId, fenceId, true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                            }
                             PendingIntent pendingIntent = FenceTriggerService.getInstance().getPendingIntent(FenceTriggerService.DATASOURCE_UPDATE, trigger);
                             try {
                                 pendingIntent.send();
@@ -338,8 +341,14 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
 
     @Override
     protected void onResume() {
-        initializeDataSources();
         super.onResume();
+        initializeDataSources();
+
+        ArrayAdapter<Fence> adapter = new ArrayAdapter<Fence>(this,
+                android.R.layout.simple_spinner_item, mFenceDS.getAllFences());
+
+        mFencessSpinner.setAdapter(adapter);
+
     }
 
     @Override
