@@ -73,7 +73,6 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_target);
-        initializeDataSources();
         mActivity = this;
         mTarget = (Target) getIntent().getSerializableExtra(PARAM);
         mFirstName = (EditText) findViewById(R.id.first_name);
@@ -85,24 +84,14 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         mRadioBoth = (RadioButton) findViewById(R.id.radioButton_both);
         mRadioGroup = (RadioGroup) findViewById(R.id.radiogroup_condition);
         mExpirationDateTimeEditText = (EditText) findViewById(R.id.editText_expiration_datetime);
+        mFenceEditFragment = (FenceEditFragment) this.getFragmentManager().findFragmentById(R.id.fragment_target_fence);
+        mFenceEditFragment.disableEditing();
         mSelectedRadio = mRadioEnter;
-
-        restoreActionBar(mTarget != null);
-        if (mTarget != null) {
-            mFirstName.setText(mTarget.getFirstName());
-            mLastName.setText(mTarget.getLastName());
-            mNickName.setText(mTarget.getNikeName());
-            mTriggers = mTriggerDS.getAllTriggersForTarget(mTarget);
-            if (!mTriggers.isEmpty()) {
-                showTrigger(mTriggers.get(0));
-            }
-        }
 
         //startActionMode(this);
     }
 
     private void showTrigger(Trigger trigger) {
-        System.out.println("duration: " + trigger.getDuration());
         mExpirationDateTime.setTimeInMillis(trigger.getDuration());
         mExpirationDateTimeEditText.setText(SIMPLE_DATE_FORMATTER.format(mExpirationDateTime.getTime()));
 
@@ -120,8 +109,6 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         ((RadioButton) mRadioGroup.getChildAt(trigger.getTransitionType() + 1)).setChecked(true);
 
         if (mFence != null) {
-            Toast.makeText(this, "fence is not null", Toast.LENGTH_LONG).show();
-            mFenceEditFragment = (FenceEditFragment) this.getFragmentManager().findFragmentById(R.id.fragment_target_fence);
             LatLng center = new LatLng(mFence.getLatitude(), mFence.getLongitude());
             mFenceEditFragment.setMarker(center, mFence.getName());
             mFenceEditFragment.drawCircle(center, mFence.getRadius());
@@ -349,6 +336,16 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
 
         mFencessSpinner.setAdapter(adapter);
 
+        restoreActionBar(mTarget != null);
+        if (mTarget != null) {
+            mFirstName.setText(mTarget.getFirstName());
+            mLastName.setText(mTarget.getLastName());
+            mNickName.setText(mTarget.getNikeName());
+            mTriggers = mTriggerDS.getAllTriggersForTarget(mTarget);
+            if (!mTriggers.isEmpty()) {
+                showTrigger(mTriggers.get(0));
+            }
+        }
     }
 
     @Override
