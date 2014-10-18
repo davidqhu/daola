@@ -41,16 +41,16 @@ public class TriggerDataSource {
         dbHelper.close();
     }
 
-    public Trigger createTrigger(long target, long fence, boolean enabled, long duration, TriggerContract.TransitionType transitionType) {
+    public Trigger createTrigger(long target, long fence, boolean enabled, long duration, int transition) {
 
         long insertId = database.insert(TABLE_NAME, null,
-                getCotentValues(target, fence, (enabled ? 1 : 0), duration, transitionType.ordinal()));
+                getCotentValues(target, fence, (enabled ? 1 : 0), duration, transition));
 
         return getTrigger(target, fence);
     }
 
-    public Trigger updateTrigger(long target, long fence, boolean enabled, long duration, TriggerContract.TransitionType transitionType) {
-        database.update(TABLE_NAME, getCotentValues(target, fence, (enabled ? 1 : 0), duration, transitionType.ordinal()), COLUMN_TARGET + "='" + target
+    public Trigger updateTrigger(long target, long fence, boolean enabled, long duration, int transition) {
+        database.update(TABLE_NAME, getCotentValues(target, fence, (enabled ? 1 : 0), duration, transition), COLUMN_TARGET + "='" + target
                 + "' and " + COLUMN_FENCE + "='" + fence + "'", null);
         return getTrigger(target, fence);
     }

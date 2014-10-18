@@ -17,15 +17,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.model.LatLng;
 import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
@@ -53,9 +54,9 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     private EditText mNickName;
     private RadioGroup mRadioGroup;
     private Spinner mFencessSpinner;
-    private RadioButton mRadioEnter;
-    private RadioButton mRadioExit;
-    private RadioButton mRadioBoth;
+    private CheckBox mCheckBoxEnter;
+    private CheckBox mCheckBoxExit;
+    private CheckBox mCheckBoxDwell;
     private EditText mExpirationDateTimeEditText;
     private Activity mActivity;
     private TargetDataSource mTargetDS;
@@ -64,8 +65,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     private Target mTarget;
     private Fence mFence;
     private List<Trigger> mTriggers;
-    private TriggerContract.TransitionType mCondition;
-    private RadioButton mSelectedRadio = null;
+    private int mCondition;
     private FenceEditFragment mFenceEditFragment;
     private Calendar mExpirationDateTime = Calendar.getInstance();
 
@@ -79,16 +79,13 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         mLastName = (EditText) findViewById(R.id.last_name);
         mNickName = (EditText) findViewById(R.id.nick_name);
         mFencessSpinner = (Spinner) findViewById(R.id.spinner_fence);
-        mRadioEnter = (RadioButton) findViewById(R.id.radioButton_enter);
-        mRadioExit = (RadioButton) findViewById(R.id.radioButton_exit);
-        mRadioBoth = (RadioButton) findViewById(R.id.radioButton_both);
+        mCheckBoxEnter = (CheckBox) findViewById(R.id.checkbox_enter);
+        mCheckBoxExit = (CheckBox) findViewById(R.id.checkbox_exit);
+        mCheckBoxDwell = (CheckBox) findViewById(R.id.checkbox_dwell);
         mRadioGroup = (RadioGroup) findViewById(R.id.radiogroup_condition);
         mExpirationDateTimeEditText = (EditText) findViewById(R.id.editText_expiration_datetime);
         mFenceEditFragment = (FenceEditFragment) this.getFragmentManager().findFragmentById(R.id.fragment_target_fence);
         mFenceEditFragment.disableEditing();
-        mSelectedRadio = mRadioEnter;
-
-        //startActionMode(this);
     }
 
     private void showTrigger(Trigger trigger) {
@@ -106,7 +103,9 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
             }
         }
 
-        ((RadioButton) mRadioGroup.getChildAt(trigger.getTransitionType() + 1)).setChecked(true);
+        mCheckBoxEnter.setChecked(trigger.isTranstionTypeEnabled(Geofence.GEOFENCE_TRANSITION_ENTER));
+        mCheckBoxExit.setChecked(trigger.isTranstionTypeEnabled(Geofence.GEOFENCE_TRANSITION_EXIT));
+        mCheckBoxDwell.setChecked(trigger.isTranstionTypeEnabled(Geofence.GEOFENCE_TRANSITION_DWELL));
 
         if (mFence != null) {
             LatLng center = new LatLng(mFence.getLatitude(), mFence.getLongitude());
@@ -187,7 +186,9 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     protected Void doInBackground(Void... arg0) {
                         Target target = mTargetDS.createTarget(mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
                         if (!mFenceDS.getAllFences().isEmpty()) {
-                            mTriggerDS.createTrigger(target.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                            int transition = TriggerContract.getTransition(mCheckBoxEnter.isChecked(), mCheckBoxExit.isChecked(), mCheckBoxDwell.isChecked());
+                            Log.i(TAG, "transition = " + transition);
+                            mTriggerDS.createTrigger(target.getId(), ((Fence) mFencessSpinner.getSelectedItem()).getId(), true, mExpirationDateTime.getTimeInMillis(), transition);
                         }
                         return null;
                     }
@@ -224,10 +225,11 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                             long fenceId = ((Fence) mFencessSpinner.getSelectedItem()).getId();
                             long targetId = mTarget.getId();
                             Trigger trigger = null;
+                            int transition = TriggerContract.getTransition(mCheckBoxEnter.isChecked(), mCheckBoxExit.isChecked(), mCheckBoxDwell.isChecked());
                             if (mTriggerDS.getTrigger(targetId, fenceId) == null) {
-                                mTriggerDS.createTrigger(targetId, fenceId, true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                                mTriggerDS.createTrigger(targetId, fenceId, true, mExpirationDateTime.getTimeInMillis(), transition);
                             } else {
-                                trigger = mTriggerDS.updateTrigger(targetId, fenceId, true, mExpirationDateTime.getTimeInMillis(), TriggerContract.getTransitionTypeFromId(mSelectedRadio.getId()));
+                                trigger = mTriggerDS.updateTrigger(targetId, fenceId, true, mExpirationDateTime.getTimeInMillis(), transition);
                             }
                             PendingIntent pendingIntent = FenceTriggerService.getInstance().getPendingIntent(FenceTriggerService.DATASOURCE_UPDATE, trigger);
                             try {
@@ -255,10 +257,6 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
             }
         });
         return view;
-    }
-
-    public void onRadioButtonClicked(View view) {
-        mSelectedRadio = (RadioButton) view;
     }
 
     public void onExpirationDateTimeClicked(View view) {

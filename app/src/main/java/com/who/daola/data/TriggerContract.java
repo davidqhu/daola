@@ -2,6 +2,7 @@ package com.who.daola.data;
 
 import android.provider.BaseColumns;
 
+import com.google.android.gms.location.Geofence;
 import com.who.daola.R;
 
 /**
@@ -20,25 +21,17 @@ public class TriggerContract {
         public static final String COLUMN_ENABLED = "enabled";
     }
 
-    public static enum TransitionType {
-        ENTER, EXIT, BOTH
-    }
-
-    public static TransitionType getTransitionTypeFromId(int id){
-        if (id == R.id.radioButton_enter) {
-            return TransitionType.ENTER;
-        } else if (id == R.id.radioButton_exit) {
-            return TransitionType.EXIT;
-        } else if (id == R.id.radioButton_both) {
-            return TransitionType.BOTH;
+    public static int getTransition(boolean enter, boolean exit, boolean dwell){
+        int transition = 0;
+        if (enter){
+            transition = Geofence.GEOFENCE_TRANSITION_ENTER;
         }
-        throw new IllegalArgumentException("Unknown id: " + id);
-    }
-
-    public static TransitionType getTransitionTypeFromIndex(int id){
-        if (id>= TransitionType.values().length || id < 0){
-            throw new IndexOutOfBoundsException("for index: " + id);
+        if (exit){
+            transition = transition | Geofence.GEOFENCE_TRANSITION_EXIT;
         }
-        return TransitionType.values()[id];
+        if (dwell){
+            transition = transition | Geofence.GEOFENCE_TRANSITION_DWELL;
+        }
+        return transition;
     }
 }

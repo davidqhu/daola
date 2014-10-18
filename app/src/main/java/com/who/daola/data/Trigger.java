@@ -8,7 +8,7 @@ public class Trigger {
     private long mFence;
     private boolean mEnabled;
     private long mDuration;
-    private int mTransitionType;
+    private int mTransition;
 
     public long getTarget() {
         return mTarget;
@@ -43,11 +43,17 @@ public class Trigger {
     }
 
     public int getTransitionType() {
-        return mTransitionType;
+        return mTransition;
     }
 
-    public void setTransitionType(int condition) {
-        this.mTransitionType = condition;
+    public void setTransitionType(int transition) {
+        this.mTransition = transition;
     }
 
+    public boolean isTranstionTypeEnabled(int transitionType) {
+        if ((mTransition & transitionType) > 0) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -25,7 +25,6 @@ import com.who.daola.data.FenceDataSource;
 import com.who.daola.data.NotificationDataSource;
 import com.who.daola.data.TargetDataSource;
 import com.who.daola.data.Trigger;
-import com.who.daola.data.TriggerContract;
 import com.who.daola.data.TriggerDataSource;
 
 import java.sql.SQLException;
@@ -75,6 +74,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
 
     /**
      * Get the service instance.
+     *
      * @return null is returned if the service is not started.
      */
     public static FenceTriggerService getInstance() {
@@ -103,7 +103,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         if (mTriggerDS == null) {
             mTriggerDS = new TriggerDataSource(this);
         }
-        if (mNotificationDS==null){
+        if (mNotificationDS == null) {
             mNotificationDS = new NotificationDataSource(this);
         }
         try {
@@ -135,7 +135,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         new Thread(new Runnable() {
             public void run() {
                 int intentAction = ADD_FENCE;
-                if (intent != null && intent.getAction()!=null) {
+                if (intent != null && intent.getAction() != null) {
                     intentAction = Integer.parseInt(intent.getAction());
                 }
 
@@ -240,14 +240,17 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
 
     public Geofence toGeofence(Fence fence, Trigger trigger) {
         // Build a new Geofence object
-        return new Geofence.Builder()
+        Geofence.Builder builder =  new Geofence.Builder()
                 .setRequestId(trigger.getFence() + "." + trigger.getTarget())
-                //TODO set the real transition
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER) //trigger.getTransitionType())
+                .setTransitionTypes(trigger.getTransitionType())
                 .setCircularRegion(
                         fence.getLatitude(), fence.getLongitude(), fence.getRadius())
-                .setExpirationDuration(trigger.getDuration())
-                .build();
+                .setExpirationDuration(trigger.getDuration());
+        if (trigger.isTranstionTypeEnabled(Geofence.GEOFENCE_TRANSITION_DWELL)){
+            // TODO set the actual delay
+            builder.setLoiteringDelay(300000);
+        }
+        return builder.build();
     }
 
     public PendingIntent getPendingIntent(int intentAction, Trigger trigger) {
@@ -296,7 +299,9 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
              * You can send out a broadcast intent or update the UI.
              * geofences into the Intent's extended data.
              */
-            Log.i(TAG, "Geofence request added successfully for " + geofenceRequestIds[0]);
+            for (int i = 0; i < geofenceRequestIds.length; i++) {
+                Log.i(TAG, "Geofence request added successfully for " + geofenceRequestIds[i]);
+            }
         } else {
             // If adding the geofences failed
             /*
@@ -315,10 +320,6 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // Turn off the request flag
         mInProgress = false;
-        /*
-         * If the error has a resolution, start a Google Play services
-         * activity to resolve it.
-         */
         if (connectionResult.hasResolution()) {
             Log.e(TAG, "Connection failed but there is resolution.");
         } else {
@@ -352,7 +353,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
             Log.i(TAG, "transition type: " + transitionType);
             // Test that a valid transition was reported
             if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                    transitionType == Geofence.GEOFENCE_TRANSITION_EXIT ) {
+                    transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
                 List<Geofence> triggerList =
                         LocationClient.getTriggeringGeofences(intent);
                 Log.i(TAG, "triggered fence count: " + triggerList.size());
@@ -380,7 +381,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
     }
 
     private long getTargetId(String geoFenceId) {
-        return Long.parseLong(geoFenceId.substring(geoFenceId.indexOf('.')+1));
+        return Long.parseLong(geoFenceId.substring(geoFenceId.indexOf('.') + 1));
     }
 
     private void showNotification() {
