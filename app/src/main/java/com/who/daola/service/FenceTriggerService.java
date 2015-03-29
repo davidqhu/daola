@@ -13,10 +13,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.GeofencingEvent;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationStatusCodes;
 import com.who.daola.MainActivity;
 import com.who.daola.R;
@@ -34,9 +36,8 @@ import java.util.List;
 /**
  * Created by dave on 9/22/2014.
  */
-public class FenceTriggerService extends Service implements GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationClient.OnAddGeofencesResultListener {
+public class FenceTriggerService extends Service implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = FenceTriggerService.class.getName();
 
@@ -47,8 +48,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
     private final static int
             CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
-    // Holds the location client
-    private LocationClient mLocationClient;
+
     // Stores the PendingIntent used to request geofence monitoring
     private PendingIntent mGeofenceRequestIntent;
     // Flag that indicates if a request is underway.
@@ -63,6 +63,7 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
     private TargetDataSource mTargetDS;
     private FenceDataSource mFenceDS;
     private NotificationDataSource mNotificationDS;
+    private GoogleApiClient mGoogleApiClient;
 
     public static final String INTENT_TYPE = "type";
 
@@ -221,13 +222,17 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
          * OnConnectionFailedListener, pass the current activity object
          * as the listener for both parameters
          */
-        mLocationClient = new LocationClient(this, this, this);
+        mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
         // If a request is not already underway
         if (!mInProgress) {
             // Indicate that a request is underway
             mInProgress = true;
             // Request a connection from the client to Location Services
-            mLocationClient.connect();
+            mGoogleApiClient.connect();
         } else {
             /*
              * A request is already underway. You can handle
@@ -274,46 +279,18 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
             List<Geofence> fences = new ArrayList<Geofence>() {{
                 add(toGeofence(mFenceDS.getFence(trigger.getFence()), trigger));
             }};
+
             // Send a request to add the current geofences
-            mLocationClient.addGeofences(
-                    fences,
-                    getPendingIntent(FENCE_TRIGGERED, trigger), this);
+            LocationServices.GeofencingApi.addGeofences(mGoogleApiClient,
+                    new GeofencingRequest.Builder().addGeofences(fences).build(),
+                    getPendingIntent(FENCE_TRIGGERED, trigger));
 
         }
     }
 
     @Override
-    public void onDisconnected() {
-        // Turn off the request flag
-        mInProgress = false;
-        // Destroy the current location client
-        mLocationClient = null;
-    }
+    public void onConnectionSuspended(int i) {
 
-    @Override
-    public void onAddGeofencesResult(int statusCode, String[] geofenceRequestIds) {
-        // If adding the geofences was successful
-        if (LocationStatusCodes.SUCCESS == statusCode) {
-            /*
-             * Handle successful addition of geofences here.
-             * You can send out a broadcast intent or update the UI.
-             * geofences into the Intent's extended data.
-             */
-            for (int i = 0; i < geofenceRequestIds.length; i++) {
-                Log.i(TAG, "Geofence request added successfully for " + geofenceRequestIds[i]);
-            }
-        } else {
-            // If adding the geofences failed
-            /*
-             * Report errors here.
-             * You can log the error using Log.e() or update
-             * the UI.
-             */
-            Log.e(TAG, "Geofence request FAILED to add for " + geofenceRequestIds[0]);
-        }
-        // Turn off the in progress flag and disconnect the client
-        mInProgress = false;
-        mLocationClient.disconnect();
     }
 
     @Override
@@ -331,9 +308,10 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
 
     private void createNotificationRecord(Intent intent) {
         // First check for errors
-        if (LocationClient.hasError(intent)) {
+        GeofencingEvent event = GeofencingEvent.fromIntent(intent);
+        if (event.hasError()) {
             // Get the error code with a static method
-            int errorCode = LocationClient.getErrorCode(intent);
+            int errorCode = event.getErrorCode();
             // Log the error
             Log.e(TAG,
                     "Location Services error: " +
@@ -349,13 +327,14 @@ public class FenceTriggerService extends Service implements GooglePlayServicesCl
         } else {
             // Get the type of transition (entry or exit)
             int transitionType =
-                    LocationClient.getGeofenceTransition(intent);
+                    event.getGeofenceTransition();
+                    event.getGeofenceTransition();
             Log.i(TAG, "transition type: " + transitionType);
             // Test that a valid transition was reported
             if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER ||
                     transitionType == Geofence.GEOFENCE_TRANSITION_EXIT) {
                 List<Geofence> triggerList =
-                        LocationClient.getTriggeringGeofences(intent);
+                        event.getTriggeringGeofences();
                 Log.i(TAG, "triggered fence count: " + triggerList.size());
                 String[] triggerIds = new String[triggerList.size()];
 

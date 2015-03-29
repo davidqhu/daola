@@ -40,50 +40,17 @@
         android:ems="10"
         android:id="@+id/radius_edittext"
         android:layout_below="@+id/name_edittext"
-        android:layout_toRightOf="@+id/radius_label" />
+        android:layout_toRightOf="@+id/radius_label"
+        android:clickable="true"
+        android:editable="false"
+        android:focusable="false"
+        android:onClick="onRadiusEditTextClick"/>
 
-    <TextView
-        android:text="@string/geofence_long_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/longitude_label"
-        android:layout_alignBottom="@+id/longitude_edittext"
-        android:layout_alignParentLeft="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/longitude_edittext"
-        android:layout_below="@+id/radius_edittext"
-        android:layout_toRightOf="@+id/longitude_label"
-        android:enabled="false"
-        android:editable="false" />
-
-    <TextView
-        android:text="@string/geofence_lat_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/latitude_label"
-        android:layout_alignParentLeft="true"
-        android:layout_alignBottom="@+id/latitude_textedit" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/latitude_textedit"
-        android:layout_below="@+id/longitude_edittext"
-        android:layout_toRightOf="@+id/latitude_label"
-        android:enabled="false"
-        android:editable="false"/>
 
     <FrameLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/latitude_textedit"
+        android:layout_below="@+id/radius_edittext"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/frameLayout">
@@ -92,7 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:name="com.who.daola.FenceEditFragment"
-            android:id="@+id/fragment2"
+            android:id="@+id/fragement_edit_fence"
             android:layout_gravity="center" />
     </FrameLayout>
 

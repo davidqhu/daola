@@ -2,7 +2,9 @@ package com.who.daola;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Color;
 import android.location.Location;
@@ -14,8 +16,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -26,17 +32,19 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class FenceEditFragment extends MapFragment implements GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener, GoogleMap.OnMapClickListener, View.OnFocusChangeListener {
+public class FenceEditFragment extends MapFragment implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMapClickListener, View.OnFocusChangeListener {
 
-    private EditText mLongitude;
-    private EditText mLatitude;
+    private double mLongitude;
+    private double mLatitude;
     private EditText mRadius;
     private EditText mName;
     private Marker mMarker;
     private Circle mCircle;
     private LatLng mHere;
     private boolean mViewOnly = false;
+    // Bool to track whether the app is already resolving an error
+    private boolean mResolvingError = false;
 
     /*
  * Define a request code to send to Google Play services
@@ -45,14 +53,19 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
     private final static int
             CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
-    private LocationClient mLocationClient;
+    private GoogleApiClient mGoogleApiClient;
     private Location mCurrentLocation;
     private boolean mConnected = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLocationClient = new LocationClient(getActivity(), this, this);
+        // Create a GoogleApiClient instance
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
     }
 
     @Override
@@ -61,20 +74,20 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
 
         if (mViewOnly) return;
         // Connect the client.
-        mLocationClient.connect();
+        mGoogleApiClient.connect();
         mName = (EditText) getActivity().findViewById(R.id.name_edittext);
-        mLongitude = (EditText) getActivity().findViewById(R.id.longitude_edittext);
-        mLatitude = (EditText) getActivity().findViewById(R.id.latitude_textedit);
         mRadius = (EditText) getActivity().findViewById(R.id.radius_edittext);
         mName.setOnFocusChangeListener(this);
         mRadius.setOnFocusChangeListener(this);
+        mLongitude = ((AddFenceActivity)getActivity()).getLongitude();
+        mLatitude = ((AddFenceActivity) getActivity()).getLatitude();
 
         if (hasPreviousLocation()) {
-            LatLng here = new LatLng(Double.parseDouble(mLatitude.getText().toString()),
-                    Double.parseDouble(mLongitude.getText().toString()));
+            LatLng here = new LatLng(mLatitude,mLongitude);
             setMarker(here, mName.getText().toString());
             drawCircle(here, Double.parseDouble(mRadius.getText().toString()));
         }
+
     }
 
     public void disableEditing() {
@@ -89,7 +102,7 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
     @Override
     public void onStop() {
         // Disconnecting the client invalidates it.
-        mLocationClient.disconnect();
+        mGoogleApiClient.disconnect();
         super.onStop();
     }
 
@@ -99,7 +112,7 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
 
 
         if (this.getMap() != null) {
-            if (!mViewOnly){
+            if (!mViewOnly) {
                 this.getMap().setOnMapClickListener(this);
             }
         } else {
@@ -142,7 +155,7 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
         // Display the connection status
         Toast.makeText(getActivity(), "Connected", Toast.LENGTH_SHORT).show();
         if (!hasPreviousLocation()) {
-            mCurrentLocation = mLocationClient.getLastLocation();
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             if (mCurrentLocation != null) {
                 LatLng here = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
                 setMarker(here, mName.getText().toString());
@@ -152,8 +165,13 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
         }
     }
 
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
     private boolean hasPreviousLocation() {
-        if (mLongitude != null && mLongitude.getText().toString().length() > 0 && mLatitude != null && mLatitude.getText().toString().length() > 0) {
+        if (mLongitude !=0 && mLatitude != 0) {
             Toast.makeText(getActivity(), "has previous fence", Toast.LENGTH_SHORT).show();
             return true;
         }
@@ -161,16 +179,6 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
         return false;
     }
 
-    /*
-     * Called by Location Services if the connection to the
-     * location client drops because of an error.
-     */
-    @Override
-    public void onDisconnected() {
-        // Display the connection status
-        Toast.makeText(getActivity(), "Disconnected. Please re-connect.",
-                Toast.LENGTH_SHORT).show();
-    }
 
     /*
      * Called by Location Services if the attempt to
@@ -184,7 +192,10 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
          * start a Google Play services activity that can resolve
          * error.
          */
-        if (connectionResult.hasResolution()) {
+        if (mResolvingError) {
+            // Already attempting to resolve an error.
+            return;
+        } else if (connectionResult.hasResolution()) {
             try {
                 // Start an Activity that tries to resolve the error
                 connectionResult.startResolutionForResult(
@@ -195,8 +206,8 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
                  * PendingIntent
                  */
             } catch (IntentSender.SendIntentException e) {
-                // Log the error
-                e.printStackTrace();
+                // There was an error with the resolution intent. Try again.
+                mGoogleApiClient.connect();
             }
         } else {
             /*
@@ -204,6 +215,7 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
              * user with the error.
              */
             showErrorDialog(connectionResult.getErrorCode());
+            mResolvingError = true;
         }
     }
 
@@ -238,10 +250,13 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
             //this.getMap().animateCamera(CameraUpdateFactory.newLatLng(latLng));
             this.getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 19), 2000, null);
 
-            mLatitude.setText(Double.toString(latLng.latitude));
-            mLongitude.setText(Double.toString(latLng.longitude));
+            mLatitude = latLng.latitude;
+            mLongitude = latLng.longitude;
+
+            ((AddFenceActivity)getActivity()).setLatitude(mLatitude);
+            ((AddFenceActivity)getActivity()).setLongitude(mLongitude);
         }
-        if (mRadius.getText().length()>0) {
+        if (mRadius.getText().length() > 0) {
             drawCircle(latLng, Double.parseDouble(mRadius.getText().toString()));
         }
     }
@@ -280,5 +295,4 @@ public class FenceEditFragment extends MapFragment implements GooglePlayServices
             mViewOnly = true;
         }
     }
-
 }

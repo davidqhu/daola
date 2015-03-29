@@ -44,5 +44,7 @@
     <string name="label_fence">Fence:</string>
     <string name="label_condition">Trigger On:</string>
     <string name="label_expires_on">Expires On:</string>
+    <string name="set">Set</string>
+    <string name="dialog_pick_radius">Set fence radius in meters:</string>
 
 </resources>
