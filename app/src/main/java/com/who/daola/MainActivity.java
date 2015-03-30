@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +16,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.who.daola.gcm.GcmHelper;
 import com.who.daola.service.FenceTriggerService;
 
 
@@ -22,6 +26,8 @@ public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks, TargetListFragment.OnFragmentInteractionListener, FenceListFragment.OnFragmentInteractionListener,  NotificationListFragment.OnFragmentInteractionListener, ActionMode.Callback {
 
     public static final String TAG = MainActivity.class.getName();
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -31,13 +37,13 @@ public class MainActivity extends Activity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
-
     private ActionMode mActionMode;
     private int mSelectedItem;
     private TargetListFragment mTargetsFragment;
     private FenceListFragment mFencesFragment;
     private NotificationListFragment mNotificationFragment;
     private TargetListFragment geo;
+    private String mRegid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +60,31 @@ public class MainActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        // Check device for Play Services APK.
+        if (checkPlayServices()) {
+            mRegid = GcmHelper.getRegistrationId(this.getApplicationContext());
+
+            if (mRegid.isEmpty()) {
+                GcmHelper.registerInBackground(this.getApplicationContext());
+            }
+            Log.i(TAG, "reg_id: " + mRegid);
+            GcmHelper.sendTestMessage();
+        } else {
+            Log.i(TAG, "No valid Google Play Services APK found.");
+        }
         if (FenceTriggerService.getInstance()==null ) {
             Intent startServiceIntent = new Intent(this, FenceTriggerService.class);
             this.startService(startServiceIntent);
         }
     }
+
+    // You need to do the Play Services APK check here too.
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkPlayServices();
+    }
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
@@ -241,4 +267,25 @@ public class MainActivity extends Activity
     public void onFragmentInteraction(Uri uri){
 
     }
+
+    /**
+     * Check the device to make sure it has the Google Play Services APK. If
+     * it doesn't, display a dialog that allows users to download the APK from
+     * the Google Play Store or enable it in the device's system settings.
+     */
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
 }
