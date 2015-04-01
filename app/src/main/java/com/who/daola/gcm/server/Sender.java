@@ -22,6 +22,7 @@ import static com.who.daola.gcm.server.Constants.TOKEN_CANONICAL_REG_ID;
 import static com.who.daola.gcm.server.Constants.TOKEN_ERROR;
 import static com.who.daola.gcm.server.Constants.TOKEN_MESSAGE_ID;
 
+import com.who.daola.gcm.GcmHelper;
 import com.who.daola.gcm.server.Result.Builder;
 
 import org.json.simple.JSONObject;
@@ -135,6 +136,7 @@ public class Sender {
     public Result sendNoRetry(Message message, String registrationId)
             throws IOException {
         StringBuilder body = newBody(PARAM_REGISTRATION_ID, registrationId);
+        addParameter(body, "quotaUser", GcmHelper.REG_ID);
         Boolean delayWhileIdle = message.isDelayWhileIdle();
         if (delayWhileIdle != null) {
             addParameter(body, PARAM_DELAY_WHILE_IDLE, delayWhileIdle ? "1" : "0");

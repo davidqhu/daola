@@ -10,7 +10,8 @@ import com.who.daola.R;
  * Created by dave on 9/7/2014.
  */
 public class TriggerContract {
-    private TriggerContract() {}
+    private TriggerContract() {
+    }
 
     public static abstract class TriggerEntry implements BaseColumns {
         public static final String TABLE_NAME = "trigger";
@@ -21,17 +22,31 @@ public class TriggerContract {
         public static final String COLUMN_ENABLED = "enabled";
     }
 
-    public static int getTransition(boolean enter, boolean exit, boolean dwell){
+    public static int getTransition(boolean enter, boolean exit, boolean dwell) {
         int transition = 0;
-        if (enter){
+        if (enter) {
             transition = Geofence.GEOFENCE_TRANSITION_ENTER;
         }
-        if (exit){
+        if (exit) {
             transition = transition | Geofence.GEOFENCE_TRANSITION_EXIT;
         }
-        if (dwell){
+        if (dwell) {
             transition = transition | Geofence.GEOFENCE_TRANSITION_DWELL;
         }
         return transition;
+    }
+
+    public static String getTransitionName(int transition) {
+        switch (transition) {
+            case Geofence.GEOFENCE_TRANSITION_ENTER:
+                return "enter";
+            case Geofence.GEOFENCE_TRANSITION_EXIT:
+                return "exit";
+            case Geofence.GEOFENCE_TRANSITION_DWELL:
+                return "dwell";
+            default:
+                return "";
+
+        }
     }
 }

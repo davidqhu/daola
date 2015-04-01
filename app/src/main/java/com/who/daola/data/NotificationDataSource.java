@@ -27,6 +27,23 @@ public class NotificationDataSource {
     private DbHelper dbHelper;
     private String[] allColumns = {_ID, COLUMN_FENCE_ID, COLUMN_TARGET_ID, COLUMN_TIME, COLUMN_TRANSITION_TYPE};
 
+    private static final String QUERY =
+            "SELECT " +
+                    TABLE_NAME + "." + _ID + ", " +
+                    TABLE_NAME + "." + COLUMN_FENCE_ID + ", " +
+                    TABLE_NAME + "." + COLUMN_TARGET_ID + ", " +
+                    TABLE_NAME + "." + COLUMN_TIME + ", " +
+                    TABLE_NAME + "." + COLUMN_TRANSITION_TYPE + ", " +
+                    FenceContract.FenceEntry.TABLE_NAME + "." + FenceContract.FenceEntry.COLUMN_NAME + ", " +
+                    TargetContract.TargetEntry.TABLE_NAME + "." + TargetContract.TargetEntry.COLUMN_NICKNAME + " " +
+                    "FROM " + TABLE_NAME +
+                    " INNER JOIN " + FenceContract.FenceEntry.TABLE_NAME +
+                    " ON " + TABLE_NAME + "." + COLUMN_FENCE_ID +
+                    "=" + FenceContract.FenceEntry.TABLE_NAME + "." + FenceContract.FenceEntry._ID +
+                    " INNER JOIN " + TargetContract.TargetEntry.TABLE_NAME +
+                    " ON " + TABLE_NAME + "." + COLUMN_TARGET_ID +
+                    "=" + TargetContract.TargetEntry.TABLE_NAME + "." + TargetContract.TargetEntry._ID;
+
     public NotificationDataSource(Context context) {
         dbHelper = new DbHelper(context);
     }
@@ -112,6 +129,22 @@ public class NotificationDataSource {
         }
     }
 
+    public List<Notification> getAllUserFriendlyNotification() {
+        List<Notification> Notifications = new ArrayList<Notification>();
+        Cursor cursor = database.rawQuery(QUERY, null);
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Notification Notification = cursorToNotification(cursor);
+                Notifications.add(Notification);
+                cursor.moveToNext();
+            }
+            return Notifications;
+        } finally {
+            cursor.close();
+        }
+    }
+
     private Notification cursorToNotification(Cursor cursor) {
         Notification Notification = new Notification();
         Notification.setId(cursor.getLong(0));
@@ -119,6 +152,8 @@ public class NotificationDataSource {
         Notification.setTargetId(cursor.getLong(2));
         Notification.setTime(cursor.getLong(3));
         Notification.setTransitionType(cursor.getInt(4));
+        Notification.setFenceName(cursor.getString(5));
+        Notification.setTargetName(cursor.getString(6));
         return Notification;
     }
 }

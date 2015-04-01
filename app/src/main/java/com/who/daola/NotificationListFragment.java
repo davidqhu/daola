@@ -147,7 +147,7 @@ public class NotificationListFragment extends Fragment implements AbsListView.On
         super.onResume();  // Always call the superclass method first
 
         initializeDataSources();
-        List<Notification> values = mDataSource.getAllNotifications();
+        List<Notification> values = mDataSource.getAllUserFriendlyNotification();
         mAdapter.clear();
         mAdapter.addAll(values);
         mAdapter.notifyDataSetChanged();
