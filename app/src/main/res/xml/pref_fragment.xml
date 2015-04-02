@@ -10,6 +10,18 @@
             android:key="pref_enable_notification"
             android:title="@string/pref_title_enable_notification"
             android:summary="@string/pref_summary_enable_notification"/>
+        <PreferenceScreen
+            android:key="pref_scan_qr_code"
+            android:title="@string/pref_scan_rq_code"
+            />
+        <PreferenceScreen
+            android:key="pref_reg_id"
+            android:title="Reg_ID">
+        </PreferenceScreen>
+        <EditTextPreference
+            android:key="pref_send_message"
+            android:title="Send Message"
+            />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -49,6 +49,7 @@
 
     <!-- Example settings for Notifications -->
     <string name="pref_title_enable_notification">Enable Notification</string>
+    <string name="pref_scan_rq_code">Scan QR Code</string>
     <string name="pref_summary_enable_notification">Notification will be populated in the notification area</string>
     <string name="pref_header_notifications">Notifications</string>
 

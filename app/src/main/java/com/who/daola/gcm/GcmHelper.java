@@ -140,7 +140,7 @@ public final class GcmHelper {
         editor.commit();
     }
 
-    public static void sendTestMessage() {
+    public static void sendTestMessage(final String receiverId, final String message) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -149,13 +149,12 @@ public final class GcmHelper {
                 String data = "all attributes";
                 Message.Builder builder = new Message.Builder();
                 builder.timeToLive(0);
-                builder.addData(key, data);
-                builder.addData(key, data);
+                builder.addData(key, message);
                 builder.collapseKey("test");
                 builder.delayWhileIdle(true);
                 Message msg = builder.build();
                 try {
-                    sender.send(msg, "APA91bE1pFQ5c8KAQFUVUJDpdNlxrJgYmYVrqNcG3puIoP8fxcCuZNCqGCYzs_PFyYH3M0tjmHflk4CzG8-x3ZC2FHjy5g_m2nwtCYmYBU1yPx9cTWIRUZnQyqK3YHhdKKoj4olalFZT", 0);
+                    sender.send(msg, receiverId, 0);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

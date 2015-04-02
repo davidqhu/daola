@@ -15,9 +15,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.who.daola.gcm.GcmHelper;
 import com.who.daola.service.FenceTriggerService;
 
@@ -42,8 +45,10 @@ public class MainActivity extends Activity
     private TargetListFragment mTargetsFragment;
     private FenceListFragment mFencesFragment;
     private NotificationListFragment mNotificationFragment;
+    private ShareIdFragment mShareIdFragment;
     private TargetListFragment geo;
     private String mRegid;
+    private Fragment mActiveFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +73,7 @@ public class MainActivity extends Activity
                 GcmHelper.registerInBackground(this.getApplicationContext());
             }
             Log.i(TAG, "reg_id: " + mRegid);
-            GcmHelper.sendTestMessage();
+
         } else {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
@@ -111,6 +116,11 @@ public class MainActivity extends Activity
                     .replace(R.id.container, mTargetsFragment)
                     .commit();
         } else if (position == 3) {
+            mShareIdFragment = ShareIdFragment.newInstance();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, mShareIdFragment)
+                    .commit();
+        } else if (position == 4) {
             fragmentManager.beginTransaction()
                     .replace(R.id.container, new SettingsFragment())
                     .commit();
@@ -131,6 +141,9 @@ public class MainActivity extends Activity
                 break;
             case 3:
                 mTitle = getString(R.string.title_settings);
+                break;
+            case 4:
+                mTitle = getString(R.string.title_id);
                 break;
             default:
                 mTitle = getString(R.string.title_activity_main);
@@ -288,4 +301,14 @@ public class MainActivity extends Activity
         return true;
     }
 
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        mActiveFragment = fragment;
+        super.onAttachFragment(fragment);
+    }
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (mActiveFragment instanceof SettingsFragment){
+            ((SettingsFragment) mActiveFragment).onActivityResult(requestCode, resultCode, intent);
+        }
+    }
 }

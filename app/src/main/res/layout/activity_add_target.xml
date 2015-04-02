@@ -28,7 +28,8 @@
             android:layout_weight="0.5"
             android:ems="12"
             android:inputType="textPersonName"
-            android:text="@string/first_name" />
+            android:text="@string/first_name"
+            android:onClick="onTargetClicked"/>
 
         <EditText
             android:id="@+id/last_name"

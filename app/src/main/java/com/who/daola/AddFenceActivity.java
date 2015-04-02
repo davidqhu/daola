@@ -282,7 +282,7 @@ public class AddFenceActivity extends Activity implements RadiusPickerDialogFrag
     }
 
     /**
-     * Set the radium textedit value from the radius picker dialog
+     * Set the radius textedit value from the radius picker dialog
      *
      * @param radius
      */
