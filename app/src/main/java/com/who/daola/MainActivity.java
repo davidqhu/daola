@@ -4,9 +4,17 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcEvent;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.ActionMode;
@@ -24,9 +32,16 @@ import com.google.zxing.integration.android.IntentResult;
 import com.who.daola.gcm.GcmHelper;
 import com.who.daola.service.FenceTriggerService;
 
+import java.nio.charset.Charset;
+
 
 public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, TargetListFragment.OnFragmentInteractionListener, FenceListFragment.OnFragmentInteractionListener,  NotificationListFragment.OnFragmentInteractionListener, ActionMode.Callback {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+        TargetListFragment.OnFragmentInteractionListener,
+        FenceListFragment.OnFragmentInteractionListener,
+        NotificationListFragment.OnFragmentInteractionListener,
+        ActionMode.Callback,
+        NfcAdapter.CreateNdefMessageCallback {
 
     public static final String TAG = MainActivity.class.getName();
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -49,6 +64,9 @@ public class MainActivity extends Activity
     private TargetListFragment geo;
     private String mRegid;
     private Fragment mActiveFragment;
+    private NfcAdapter mNfcAdapter;
+    private PendingIntent mPendingIntent;
+    private IntentFilter[] mFilters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,19 +95,51 @@ public class MainActivity extends Activity
         } else {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
-        if (FenceTriggerService.getInstance()==null ) {
+        if (FenceTriggerService.getInstance() == null) {
             Intent startServiceIntent = new Intent(this, FenceTriggerService.class);
             this.startService(startServiceIntent);
         }
+
+        // Check for available NFC Adapter
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (mNfcAdapter == null) {
+            Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+        // Register callback
+        mNfcAdapter.setNdefPushMessageCallback(this, this);
+
+        mPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        try {
+            ndef.addDataType("text/plain");
+        } catch (IntentFilter.MalformedMimeTypeException e) {
+            throw new RuntimeException("fail", e);
+        }
+        mFilters = new IntentFilter[]{ndef,};
     }
 
     // You need to do the Play Services APK check here too.
     @Override
     protected void onResume() {
         super.onResume();
+
+        mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters, null);
         checkPlayServices();
+        // Check to see that the Activity started due to an Android Beam
+        Log.i(TAG, "resume" + getIntent().getAction());
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
+
+            processIntent(getIntent());
+        }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mNfcAdapter.disableForegroundDispatch(this);
+    }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
@@ -167,7 +217,7 @@ public class MainActivity extends Activity
             getMenuInflater().inflate(R.menu.main, menu);
             restoreActionBar();
             return true;
-        }  else if (!mNavigationDrawerFragment.isDrawerOpen() && mSelectedItem == 1) {
+        } else if (!mNavigationDrawerFragment.isDrawerOpen() && mSelectedItem == 1) {
             getMenuInflater().inflate(R.menu.geo, menu);
             restoreActionBar();
             return true;
@@ -277,7 +327,7 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri){
+    public void onFragmentInteraction(Uri uri) {
 
     }
 
@@ -306,9 +356,42 @@ public class MainActivity extends Activity
         mActiveFragment = fragment;
         super.onAttachFragment(fragment);
     }
+
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (mActiveFragment instanceof SettingsFragment){
+        if (mActiveFragment instanceof SettingsFragment) {
             ((SettingsFragment) mActiveFragment).onActivityResult(requestCode, resultCode, intent);
         }
+    }
+
+    @Override
+    public NdefMessage createNdefMessage(NfcEvent event) {
+
+        NdefRecord mimeRecord = NdefRecord.createMime("text/plain",
+                GcmHelper.REG_ID.getBytes(Charset.forName("US-ASCII")));
+        NdefMessage msg = new NdefMessage(
+                new NdefRecord[]{mimeRecord
+                        , NdefRecord.createApplicationRecord("com.who.daola")
+                });
+        return msg;
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        // onResume gets called after this to handle the intent
+        setIntent(intent);
+    }
+
+    /**
+     * Parses the NDEF Message from the intent and prints to the TextView
+     */
+    void processIntent(Intent intent) {
+        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
+                NfcAdapter.EXTRA_NDEF_MESSAGES);
+        // only one message sent during the beam
+        NdefMessage msg = (NdefMessage) rawMsgs[0];
+        // record 0 contains the MIME type, record 1 is the AAR, if present
+        String payload = new String(msg.getRecords()[0].getPayload());
+        Toast.makeText(this, payload, Toast.LENGTH_LONG).show();
+        Log.i(TAG, payload);
     }
 }
