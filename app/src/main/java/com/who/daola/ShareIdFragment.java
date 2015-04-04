@@ -54,7 +54,7 @@ public class ShareIdFragment extends Fragment {
         QRCodeWriter writer = new QRCodeWriter();
         try {
             BitMatrix matrix = writer.encode(
-                    GcmHelper.REG_ID, BarcodeFormat.QR_CODE, 600, 600
+                    NfcHelper.getMsgContent(), BarcodeFormat.QR_CODE, 600, 600
             );
             mButton.setImageBitmap(toBitmap(matrix));
             // Now what??

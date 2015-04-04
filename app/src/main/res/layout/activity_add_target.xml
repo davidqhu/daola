@@ -18,34 +18,28 @@
         android:orientation="horizontal"
         android:weightSum="1">
 
-        <EditText
-            android:id="@+id/first_name"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/target_name_textview"
             android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_weight="0.5"
-            android:ems="12"
-            android:inputType="textPersonName"
-            android:text="@string/first_name"
-            android:onClick="onTargetClicked"/>
+            android:text="@string/target_name"/>
 
         <EditText
-            android:id="@+id/last_name"
-            android:layout_width="0dp"
+            android:id="@+id/target_name_edittext"
             android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
             android:layout_alignTop="@+id/first_name"
             android:layout_toEndOf="@+id/first_name"
             android:layout_toRightOf="@+id/first_name"
-            android:layout_weight="0.5"
             android:ems="15"
-            android:inputType="textPersonName"
-            android:text="@string/last_name" />
+            android:inputType="textPersonName" />
 
     </LinearLayout>
 
-    <EditText
+    <Button
         android:id="@+id/nick_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -53,7 +47,8 @@
         android:layout_below="@+id/add_target_linerlayout"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="@string/nick_name" />
+        android:text="@string/get_target_id"
+        android:onClick="onGetTargetIdClicked"/>
 
     <RelativeLayout
         android:layout_width="fill_parent"
