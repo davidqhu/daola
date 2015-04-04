@@ -24,7 +24,7 @@ public class DetailedTargetActivity extends Activity {
     private TargetDataSource mTargetDS;
     private TriggerDataSource mTriggerDS;
     private NotificationDataSource mNotificationDS;
-    private TextView mNickName;
+    private TextView mName;
 
 
     @Override
@@ -33,13 +33,12 @@ public class DetailedTargetActivity extends Activity {
         setContentView(R.layout.activity_detailed_target);
 
         mTarget = (Target) getIntent().getSerializableExtra("target");
-        mNickName = (TextView) findViewById(R.id.first_name_textview);
+        mName = (TextView) findViewById(R.id.first_name_textview);
         updateTextViews();
     }
 
     private void updateTextViews() {
-
-        mNickName.setText(mTarget.getName());
+        mName.setText(mTarget.getName());
     }
 
     @Override

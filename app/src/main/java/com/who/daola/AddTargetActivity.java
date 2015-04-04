@@ -52,7 +52,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     public static final String TAG = AddTargetActivity.class.getName();
     public static final String PARAM = "target";
     private ImageView mAddImage;
-    private EditText mNickName;
+    private EditText mName;
     private RadioGroup mRadioGroup;
     private Spinner mFencessSpinner;
     private CheckBox mCheckBoxEnter;
@@ -78,7 +78,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         setContentView(R.layout.activity_add_target);
         mActivity = this;
         mTarget = (Target) getIntent().getSerializableExtra(PARAM);
-        mNickName = (EditText) findViewById(R.id.target_name_edittext);
+        mName = (EditText) findViewById(R.id.target_name_edittext);
         mFencessSpinner = (Spinner) findViewById(R.id.spinner_fence);
         mCheckBoxEnter = (CheckBox) findViewById(R.id.checkbox_enter);
         mCheckBoxExit = (CheckBox) findViewById(R.id.checkbox_exit);
@@ -185,7 +185,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        Target target = mTargetDS.createTarget(mNickName.getText().toString(), mTargetRegId);
+                        Target target = mTargetDS.createTarget(mName.getText().toString(), mTargetRegId);
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             int transition = TriggerContract.getTransition(mCheckBoxEnter.isChecked(), mCheckBoxExit.isChecked(), mCheckBoxDwell.isChecked());
                             Log.i(TAG, "transition = " + transition);
@@ -220,7 +220,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mTargetDS.updateTarget(mTarget.getId(), mNickName.getText().toString(), mTargetRegId);
+                        mTargetDS.updateTarget(mTarget.getId(), mName.getText().toString(), mTargetRegId);
                         // A target can have no fence associated to it
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             long fenceId = ((Fence) mFencessSpinner.getSelectedItem()).getId();
@@ -337,7 +337,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
 
         restoreActionBar(mTarget != null);
         if (mTarget != null) {
-            mNickName.setText(mTarget.getName());
+            mName.setText(mTarget.getName());
             mTriggers = mTriggerDS.getAllTriggersForTarget(mTarget);
             if (!mTriggers.isEmpty()) {
                 showTrigger(mTriggers.get(0));
@@ -424,7 +424,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         if (scanResult != null && scanResult.getContents()!=null) {
             String msgContent = scanResult.getContents().toString();
             mTargetRegId = NfcHelper.getID(msgContent);
-            mNickName.setText(NfcHelper.getName(msgContent));
+            mName.setText(NfcHelper.getName(msgContent));
             Toast.makeText(this, "Get target id: " + mTargetRegId, Toast.LENGTH_SHORT).show();
         }
     }
