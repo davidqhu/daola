@@ -15,8 +15,7 @@ public final class TargetContract {
     public static abstract class TargetEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "target";
-        public static final String COLUMN_FIRSTNAME = "firstname";
-        public static final String COLUMN_LASTNAME = "lastname";
-        public static final String COLUMN_NICKNAME = "nickname";
+        public static final String COLUMN_REG_ID = "regid";
+        public static final String COLUMN_NAME = "nickname";
     }
 }

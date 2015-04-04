@@ -7,32 +7,23 @@ import java.io.Serializable;
  */
 public class Target implements Serializable {
     private long mId;
-    private String mFirstName;
-    private String mLastName;
-    private String mNikeName;
+    private String mName;
+    private String mRegId;
 
-    public String getNikeName() {
-        return mNikeName;
+    public String getRegId() {
+        return mRegId;
     }
 
-    public void setNikeName(String nickname) {
-        this.mNikeName = nickname;
+    public void setRegId(String regId) {
+        this.mRegId = regId;
     }
 
-    public String getFirstName() {
-        return mFirstName;
+    public String getName() {
+        return mName;
     }
 
-    public void setFirstName(String firstName) {
-        this.mFirstName = firstName;
-    }
-
-    public String getLastName() {
-        return mLastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.mLastName = lastName;
+    public void setName(String name) {
+        this.mName = name;
     }
 
     public long getId() {
@@ -45,9 +36,6 @@ public class Target implements Serializable {
 
     @Override
     public String toString() {
-        if (getNikeName() != null) {
-            return getNikeName();
-        }
-        return getFirstName();
+        return getName();
     }
 }

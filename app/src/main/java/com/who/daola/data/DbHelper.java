@@ -17,9 +17,8 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_TARGET = "create table "
             + TargetContract.TargetEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID
             + " integer primary key autoincrement, "
-            + TargetContract.TargetEntry.COLUMN_FIRSTNAME + " text,"
-            + TargetContract.TargetEntry.COLUMN_LASTNAME + " text,"
-            + TargetContract.TargetEntry.COLUMN_NICKNAME + " text not null);";
+            + TargetContract.TargetEntry.COLUMN_NAME + " text not null,"
+            + TargetContract.TargetEntry.COLUMN_REG_ID + " text);";
 
     private static final String CREATE_TABLE_FENCE = "create table "
             + FenceContract.FenceEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID
@@ -47,7 +46,7 @@ public class DbHelper extends SQLiteOpenHelper {
             + NotificationContract.NotificationEntry.COLUMN_TRANSITION_TYPE + " integer);";
 
     private static final String INSERT_SELF_TARGET_ENTRY = "insert into " + TargetContract.TargetEntry.TABLE_NAME
-            + " ( " + TargetContract.TargetEntry.COLUMN_NICKNAME + " ) values('self')";
+            + " ( " + TargetContract.TargetEntry.COLUMN_NAME + " ) values('self')";
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

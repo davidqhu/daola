@@ -13,7 +13,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:inputType="text"
-        android:text="@string/first_name"
+        android:text="@string/target_name"
         android:ems="12"
         android:id="@+id/first_name_label"
         android:layout_alignParentLeft="true"
@@ -32,55 +32,5 @@
         android:layout_alignLeft="@+id/first_name_label"
         android:layout_alignStart="@+id/first_name_label"
         android:layout_marginTop="15dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:text="@string/last_name"
-        android:ems="10"
-        android:id="@+id/last_name_label"
-        android:layout_below="@+id/first_name_textview"
-        android:layout_alignLeft="@+id/first_name_textview"
-        android:layout_alignStart="@+id/first_name_textview"
-        android:layout_marginTop="15dp" />
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="12"
-        android:id="@+id/last_name_textview"
-        android:singleLine="true"
-        android:layout_marginTop="21dp"
-        android:layout_below="@+id/last_name_label"
-        android:layout_alignLeft="@+id/last_name_label"
-        android:layout_alignStart="@+id/last_name_label" />
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:text="@string/nick_name"
-        android:ems="12"
-        android:id="@+id/nick_name_label"
-        android:singleLine="true"
-        android:layout_marginTop="22dp"
-        android:layout_below="@+id/last_name_textview"
-        android:layout_alignLeft="@+id/last_name_textview"
-        android:layout_alignStart="@+id/last_name_textview" />
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="12"
-        android:id="@+id/nick_name_textview"
-        android:singleLine="true"
-        android:layout_marginTop="20dp"
-        android:layout_below="@+id/nick_name_label"
-        android:layout_alignLeft="@+id/nick_name_label"
-        android:layout_alignStart="@+id/nick_name_label" />
-
 
 </RelativeLayout>

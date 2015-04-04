@@ -24,8 +24,6 @@ public class DetailedTargetActivity extends Activity {
     private TargetDataSource mTargetDS;
     private TriggerDataSource mTriggerDS;
     private NotificationDataSource mNotificationDS;
-    private TextView mFirstName;
-    private TextView mLastName;
     private TextView mNickName;
 
 
@@ -35,16 +33,13 @@ public class DetailedTargetActivity extends Activity {
         setContentView(R.layout.activity_detailed_target);
 
         mTarget = (Target) getIntent().getSerializableExtra("target");
-        mFirstName = (TextView) findViewById(R.id.first_name_textview);
-        mLastName = (TextView) findViewById(R.id.last_name_textview);
-        mNickName = (TextView) findViewById(R.id.nick_name_textview);
+        mNickName = (TextView) findViewById(R.id.first_name_textview);
         updateTextViews();
     }
 
     private void updateTextViews() {
-        mFirstName.setText(mTarget.getFirstName());
-        mLastName.setText(mTarget.getLastName());
-        mNickName.setText(mTarget.getNikeName());
+
+        mNickName.setText(mTarget.getName());
     }
 
     @Override
@@ -119,7 +114,7 @@ public class DetailedTargetActivity extends Activity {
             builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     // User clicked OK button
-                    mTargetDS.deletePeople(mTarget);
+                    mTargetDS.deleteTarget(mTarget);
                     mTriggerDS.deleteTriggerByTarget(mTarget.getId());
                     mNotificationDS.deleteNotificationByTarget(mTarget.getId());
                     finish();

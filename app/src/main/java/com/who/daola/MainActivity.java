@@ -365,14 +365,7 @@ public class MainActivity extends Activity
 
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
-
-        NdefRecord mimeRecord = NdefRecord.createMime("text/plain",
-                GcmHelper.REG_ID.getBytes(Charset.forName("US-ASCII")));
-        NdefMessage msg = new NdefMessage(
-                new NdefRecord[]{mimeRecord
-                        , NdefRecord.createApplicationRecord("com.who.daola")
-                });
-        return msg;
+        return NfcHelper.getRegIdMsg();
     }
 
     @Override

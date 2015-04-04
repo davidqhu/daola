@@ -7,6 +7,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -28,6 +29,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
 import com.who.daola.data.Target;
@@ -49,8 +52,6 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     public static final String TAG = AddTargetActivity.class.getName();
     public static final String PARAM = "target";
     private ImageView mAddImage;
-    private EditText mFirstName;
-    private EditText mLastName;
     private EditText mNickName;
     private RadioGroup mRadioGroup;
     private Spinner mFencessSpinner;
@@ -69,15 +70,15 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     private FenceEditFragment mFenceEditFragment;
     private Calendar mExpirationDateTime = Calendar.getInstance();
 
+    private String mTargetRegId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_target);
         mActivity = this;
         mTarget = (Target) getIntent().getSerializableExtra(PARAM);
-        mFirstName = (EditText) findViewById(R.id.first_name);
-        mLastName = (EditText) findViewById(R.id.last_name);
-        mNickName = (EditText) findViewById(R.id.nick_name);
+        mNickName = (EditText) findViewById(R.id.target_name_edittext);
         mFencessSpinner = (Spinner) findViewById(R.id.spinner_fence);
         mCheckBoxEnter = (CheckBox) findViewById(R.id.checkbox_enter);
         mCheckBoxExit = (CheckBox) findViewById(R.id.checkbox_exit);
@@ -184,7 +185,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        Target target = mTargetDS.createTarget(mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
+                        Target target = mTargetDS.createTarget(mNickName.getText().toString(), mTargetRegId);
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             int transition = TriggerContract.getTransition(mCheckBoxEnter.isChecked(), mCheckBoxExit.isChecked(), mCheckBoxDwell.isChecked());
                             Log.i(TAG, "transition = " + transition);
@@ -219,7 +220,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mTargetDS.updateTarget(mTarget.getId(), mFirstName.getText().toString(), mLastName.getText().toString(), mNickName.getText().toString());
+                        mTargetDS.updateTarget(mTarget.getId(), mNickName.getText().toString(), mTargetRegId);
                         // A target can have no fence associated to it
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             long fenceId = ((Fence) mFencessSpinner.getSelectedItem()).getId();
@@ -336,9 +337,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
 
         restoreActionBar(mTarget != null);
         if (mTarget != null) {
-            mFirstName.setText(mTarget.getFirstName());
-            mLastName.setText(mTarget.getLastName());
-            mNickName.setText(mTarget.getNikeName());
+            mNickName.setText(mTarget.getName());
             mTriggers = mTriggerDS.getAllTriggersForTarget(mTarget);
             if (!mTriggers.isEmpty()) {
                 showTrigger(mTriggers.get(0));
@@ -412,6 +411,21 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                 newFragment.show(this.getActivity().getFragmentManager(), "timePicker");
                 ((AddTargetActivity) this.getActivity()).updateDate(year, month, day);
             }
+        }
+    }
+
+    public void onGetTargetIdClicked(View view){
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.initiateScan();
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanResult != null && scanResult.getContents()!=null) {
+            String msgContent = scanResult.getContents().toString();
+            mTargetRegId = NfcHelper.getID(msgContent);
+            mNickName.setText(NfcHelper.getName(msgContent));
+            Toast.makeText(this, "Get target id: " + mTargetRegId, Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -35,7 +35,7 @@ public class NotificationDataSource {
                     TABLE_NAME + "." + COLUMN_TIME + ", " +
                     TABLE_NAME + "." + COLUMN_TRANSITION_TYPE + ", " +
                     FenceContract.FenceEntry.TABLE_NAME + "." + FenceContract.FenceEntry.COLUMN_NAME + ", " +
-                    TargetContract.TargetEntry.TABLE_NAME + "." + TargetContract.TargetEntry.COLUMN_NICKNAME + " " +
+                    TargetContract.TargetEntry.TABLE_NAME + "." + TargetContract.TargetEntry.COLUMN_NAME + " " +
                     "FROM " + TABLE_NAME +
                     " INNER JOIN " + FenceContract.FenceEntry.TABLE_NAME +
                     " ON " + TABLE_NAME + "." + COLUMN_FENCE_ID +

@@ -18,9 +18,9 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_add_target">AddTargetActivity</string>
     <string name="hello_world">Hello world!</string>
-    <string name="first_name">First Name</string>
-    <string name="last_name">Last Name</string>
-    <string name="nick_name">Nickname</string>
+    <string name="target_name">Name: </string>
+    <string name="get_target_id">Get Target ID</string>
+    <string name="target_id_acquired">Target ID Acquired</string>
     <string name="add">ADD |</string>
     <string name="save_action">SAVE |</string>
     <string name="title_activity_detailed_target">DetailedTargetActivity</string>

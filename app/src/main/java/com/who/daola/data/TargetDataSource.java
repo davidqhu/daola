@@ -10,9 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_FIRSTNAME;
-import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_LASTNAME;
-import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_NICKNAME;
+import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_NAME;
+import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_REG_ID;
 import static com.who.daola.data.TargetContract.TargetEntry.TABLE_NAME;
 import static com.who.daola.data.TargetContract.TargetEntry._ID;
 
@@ -26,8 +25,7 @@ public class TargetDataSource {
     // Database fields
     private SQLiteDatabase database;
     private DbHelper dbHelper;
-    private String[] allColumns = {_ID,
-            COLUMN_FIRSTNAME, COLUMN_LASTNAME, COLUMN_NICKNAME};
+    private String[] allColumns = {_ID, COLUMN_NAME, COLUMN_REG_ID};
 
     public TargetDataSource(Context context) {
         dbHelper = new DbHelper(context);
@@ -41,28 +39,25 @@ public class TargetDataSource {
         dbHelper.close();
     }
 
-    public Target createTarget(String firstName, String lastName, String nickName) {
+    public Target createTarget(String name, String regId) {
 
         long insertId = database.insert(TABLE_NAME, null,
-                getCotentValues(firstName, lastName, nickName));
+                getCotentValues(name, regId));
 
         return getTarget(insertId);
     }
 
-    public Target updateTarget(long id, String firstName, String lastName, String nickName) {
-        database.update(TABLE_NAME, getCotentValues(firstName, lastName, nickName), _ID + "='" + id
+    public Target updateTarget(long id, String name, String regId) {
+        database.update(TABLE_NAME, getCotentValues(name, regId), _ID + "='" + id
                 + "'", null);
         return getTarget(id);
     }
 
-    private ContentValues getCotentValues(String firstName, String lastName, String nickName) {
+    private ContentValues getCotentValues(String name, String regId) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_FIRSTNAME, firstName);
-        if (lastName != null) {
-            values.put(COLUMN_LASTNAME, lastName);
-        }
-        if (nickName != null) {
-            values.put(COLUMN_NICKNAME, nickName);
+        values.put(COLUMN_NAME, name);
+        if (regId != null) {
+            values.put(COLUMN_REG_ID, regId);
         }
         return values;
     }
@@ -80,11 +75,10 @@ public class TargetDataSource {
         }
     }
 
-    public void deletePeople(Target People) {
-        long id = People.getId();
-        Log.i("PeopleDataSource", "People deleted with id: " + id);
-        database.delete(TABLE_NAME, _ID
-                + " = " + id, null);
+    public void deleteTarget(Target target) {
+        long id = target.getId();
+        Log.i(TargetDataSource.class.getName(), "target deleted with id: " + id);
+        database.delete(TABLE_NAME, _ID + " = " + id, null);
     }
 
     public List<Target> getAllTargets() {
@@ -109,9 +103,8 @@ public class TargetDataSource {
     private Target cursorToTarget(Cursor cursor) {
         Target target = new Target();
         target.setId(cursor.getLong(0));
-        target.setFirstName(cursor.getString(1));
-        target.setLastName(cursor.getString(2));
-        target.setNikeName(cursor.getString(3));
+        target.setName(cursor.getString(1));
+        target.setRegId(cursor.getString(2));
         return target;
     }
 }
