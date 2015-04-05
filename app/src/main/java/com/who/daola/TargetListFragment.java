@@ -15,8 +15,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.who.daola.data.Target;
+import com.who.daola.data.TrackerTarget;
 import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TrackerTargetContract;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,8 +36,7 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_PARAM1 = "tableName";
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -55,15 +55,20 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
      */
     private ArrayAdapter mAdapter;
     private boolean mDataSourceChanged = false;
+    private String mTableName;
 
     private TargetDataSource mDataSource;
 
     // TODO: Rename and change types of parameters
-    public static TargetListFragment newInstance(String param1, String param2) {
+    public static TargetListFragment newInstance(String tableName) {
+
+        if (tableName != TrackerTargetContract.TrackerEntry.TABLE_NAME &&
+                tableName != TrackerTargetContract.TargetEntry.TABLE_NAME) {
+            throw new IllegalArgumentException(String.format("Table name %s is invalid.", tableName));
+        }
         TargetListFragment fragment = new TargetListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_PARAM1, tableName);
         fragment.setArguments(args);
         return fragment;
     }
@@ -78,6 +83,9 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (this.getArguments()!=null) {
+            mTableName = this.getArguments().getString(ARG_PARAM1);
+        }
     }
 
     @Override
@@ -85,8 +93,8 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
-        mAdapter = new ArrayAdapter<Target>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList<Target>());
+        mAdapter = new ArrayAdapter<TrackerTarget>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList<TrackerTarget>());
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
@@ -100,7 +108,7 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
 
     private void initializeDataSources() {
         if (mDataSource == null) {
-            mDataSource = new TargetDataSource(getActivity());
+            mDataSource = new TargetDataSource(getActivity(), mTableName);
         }
         try {
             mDataSource.open();
@@ -115,7 +123,7 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
         super.onResume();  // Always call the superclass method first
         initializeDataSources();
 
-        List<Target> values = mDataSource.getAllTargets();
+        List<TrackerTarget> values = mDataSource.getAllTargets();
 
         mAdapter.clear();
         mAdapter.addAll(values);
@@ -157,7 +165,7 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            final Target item = (Target) parent.getItemAtPosition(position);
+            final TrackerTarget item = (TrackerTarget) parent.getItemAtPosition(position);
             Intent intent = new Intent(getActivity(), DetailedTargetActivity.class);
             intent.putExtra(AddTargetActivity.PARAM, item);
             getActivity().startActivity(intent);

@@ -10,10 +10,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_NAME;
-import static com.who.daola.data.TargetContract.TargetEntry.COLUMN_REG_ID;
-import static com.who.daola.data.TargetContract.TargetEntry.TABLE_NAME;
-import static com.who.daola.data.TargetContract.TargetEntry._ID;
+import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_CONTROL_LEVEL;
+import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_DISABLED;
+import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_NAME;
+import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_REG_ID;
+import static com.who.daola.data.TrackerTargetContract.TargetEntry._ID;
 
 /**
  * Target Data Source
@@ -25,10 +26,16 @@ public class TargetDataSource {
     // Database fields
     private SQLiteDatabase database;
     private DbHelper dbHelper;
-    private String[] allColumns = {_ID, COLUMN_NAME, COLUMN_REG_ID};
+    private String mTableName;
+    private String[] allColumns = {_ID, COLUMN_NAME, COLUMN_REG_ID, COLUMN_CONTROL_LEVEL, COLUMN_DISABLED};
 
-    public TargetDataSource(Context context) {
+    public TargetDataSource(Context context, String tableName) {
+        if (tableName != TrackerTargetContract.TrackerEntry.TABLE_NAME &&
+                tableName != TrackerTargetContract.TargetEntry.TABLE_NAME) {
+            throw new IllegalArgumentException(String.format("Table name %s is invalid.", tableName));
+        }
         dbHelper = new DbHelper(context);
+        mTableName = tableName;
     }
 
     public void open() throws SQLException {
@@ -39,72 +46,76 @@ public class TargetDataSource {
         dbHelper.close();
     }
 
-    public Target createTarget(String name, String regId) {
+    public TrackerTarget createTarget(String name, String regId, int controlLevel, boolean disabled) {
 
-        long insertId = database.insert(TABLE_NAME, null,
-                getCotentValues(name, regId));
+        long insertId = database.insert(mTableName, null,
+                getCotentValues(name, regId, controlLevel, disabled));
 
         return getTarget(insertId);
     }
 
-    public Target updateTarget(long id, String name, String regId) {
-        database.update(TABLE_NAME, getCotentValues(name, regId), _ID + "='" + id
+    public TrackerTarget updateTarget(long id, String name, String regId, int controlLevel, boolean disabled) {
+        database.update(mTableName, getCotentValues(name, regId, controlLevel, disabled), _ID + "='" + id
                 + "'", null);
         return getTarget(id);
     }
 
-    private ContentValues getCotentValues(String name, String regId) {
+    private ContentValues getCotentValues(String name, String regId, int controlLevel, boolean disabled) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, name);
         if (regId != null) {
             values.put(COLUMN_REG_ID, regId);
         }
+        values.put(COLUMN_CONTROL_LEVEL, controlLevel);
+        values.put(COLUMN_DISABLED, disabled);
         return values;
     }
 
-    public Target getTarget(long id) {
-        Cursor cursor = database.query(TABLE_NAME,
+    public TrackerTarget getTarget(long id) {
+        Cursor cursor = database.query(mTableName,
                 allColumns, _ID + " = " + id, null,
                 null, null, null);
         try {
             cursor.moveToFirst();
-            Target people = cursorToTarget(cursor);
+            TrackerTarget people = cursorToTarget(cursor);
             return people;
         } finally {
             cursor.close();
         }
     }
 
-    public void deleteTarget(Target target) {
+    public void deleteTarget(TrackerTarget target) {
         long id = target.getId();
         Log.i(TargetDataSource.class.getName(), "target deleted with id: " + id);
-        database.delete(TABLE_NAME, _ID + " = " + id, null);
+        database.delete(mTableName, _ID + " = " + id, null);
     }
 
-    public List<Target> getAllTargets() {
-        List<Target> targets = new ArrayList<Target>();
+    public List<TrackerTarget> getAllTargets() {
+        List<TrackerTarget> trackersTargets = new ArrayList<TrackerTarget>();
 
-        Cursor cursor = database.query(TABLE_NAME,
+        Cursor cursor = database.query(mTableName,
                 allColumns, null, null, null, null, null);
 
         try {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
-                Target target = cursorToTarget(cursor);
-                targets.add(target);
+                TrackerTarget target = cursorToTarget(cursor);
+                trackersTargets.add(target);
                 cursor.moveToNext();
             }
-            return targets;
+            return trackersTargets;
         } finally {
             cursor.close();
         }
     }
 
-    private Target cursorToTarget(Cursor cursor) {
-        Target target = new Target();
-        target.setId(cursor.getLong(0));
-        target.setName(cursor.getString(1));
-        target.setRegId(cursor.getString(2));
-        return target;
+    private TrackerTarget cursorToTarget(Cursor cursor) {
+        TrackerTarget trackerTarget = new TrackerTarget();
+        trackerTarget.setId(cursor.getLong(0));
+        trackerTarget.setName(cursor.getString(1));
+        trackerTarget.setRegId(cursor.getString(2));
+        trackerTarget.setControlLevel(cursor.getInt(3));
+        trackerTarget.disable(Boolean.parseBoolean(Integer.toString(cursor.getInt(4))));
+        return trackerTarget;
     }
 }

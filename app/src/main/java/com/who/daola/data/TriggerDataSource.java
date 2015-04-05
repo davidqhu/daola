@@ -113,7 +113,7 @@ public class TriggerDataSource {
         }
     }
 
-    public List<Trigger> getAllTriggersForTarget(Target target) {
+    public List<Trigger> getAllTriggersForTarget(TrackerTarget target) {
         return getAllTriggersForCondition(COLUMN_TARGET, Long.toString(target.getId()));
     }
 

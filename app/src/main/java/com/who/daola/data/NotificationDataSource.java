@@ -35,14 +35,14 @@ public class NotificationDataSource {
                     TABLE_NAME + "." + COLUMN_TIME + ", " +
                     TABLE_NAME + "." + COLUMN_TRANSITION_TYPE + ", " +
                     FenceContract.FenceEntry.TABLE_NAME + "." + FenceContract.FenceEntry.COLUMN_NAME + ", " +
-                    TargetContract.TargetEntry.TABLE_NAME + "." + TargetContract.TargetEntry.COLUMN_NAME + " " +
+                    TrackerTargetContract.TargetEntry.TABLE_NAME + "." + TrackerTargetContract.TargetEntry.COLUMN_NAME + " " +
                     "FROM " + TABLE_NAME +
                     " INNER JOIN " + FenceContract.FenceEntry.TABLE_NAME +
                     " ON " + TABLE_NAME + "." + COLUMN_FENCE_ID +
                     "=" + FenceContract.FenceEntry.TABLE_NAME + "." + FenceContract.FenceEntry._ID +
-                    " INNER JOIN " + TargetContract.TargetEntry.TABLE_NAME +
+                    " INNER JOIN " + TrackerTargetContract.TargetEntry.TABLE_NAME +
                     " ON " + TABLE_NAME + "." + COLUMN_TARGET_ID +
-                    "=" + TargetContract.TargetEntry.TABLE_NAME + "." + TargetContract.TargetEntry._ID;
+                    "=" + TrackerTargetContract.TargetEntry.TABLE_NAME + "." + TrackerTargetContract.TargetEntry._ID;
 
     public NotificationDataSource(Context context) {
         dbHelper = new DbHelper(context);

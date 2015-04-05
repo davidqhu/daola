@@ -9,10 +9,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
@@ -27,13 +25,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
+import com.who.daola.data.TrackerTargetContract;
 import com.who.daola.gcm.GcmHelper;
 import com.who.daola.service.FenceTriggerService;
-
-import java.nio.charset.Charset;
-
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
@@ -44,6 +38,15 @@ public class MainActivity extends Activity
         NfcAdapter.CreateNdefMessageCallback {
 
     public static final String TAG = MainActivity.class.getName();
+    public static final int MENU_NOTIFICATIONS = 0;
+    public static final int MENU_FENCES = 1;
+    public static final int MENU_TARGERTS = 2;
+    public static final int MENU_TRACKERS = 3;
+    public static final int MENU_SHARE_ID = 4;
+    public static final int MENU_SETTINGS = 5;
+
+    public String[] menus;
+
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     /**
@@ -61,12 +64,14 @@ public class MainActivity extends Activity
     private FenceListFragment mFencesFragment;
     private NotificationListFragment mNotificationFragment;
     private ShareIdFragment mShareIdFragment;
-    private TargetListFragment geo;
+    private TargetListFragment mTrackersFragment;
+
     private String mRegid;
     private Fragment mActiveFragment;
     private NfcAdapter mNfcAdapter;
     private PendingIntent mPendingIntent;
     private IntentFilter[] mFilters;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,12 +81,12 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
 
-        mTitle = getTitle();
-
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        mTitle = getTitle();
 
         // Check device for Play Services APK.
         if (checkPlayServices()) {
@@ -110,7 +115,8 @@ public class MainActivity extends Activity
         // Register callback
         mNfcAdapter.setNdefPushMessageCallback(this, this);
 
-        mPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        mPendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
         IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
         try {
             ndef.addDataType("text/plain");
@@ -149,28 +155,34 @@ public class MainActivity extends Activity
         mSelectedItem = position;
         onSectionAttached(mSelectedItem);
         restoreActionBar();
-        if (position == 0) {
+        if (position == MENU_NOTIFICATIONS) {
             mNotificationFragment = NotificationListFragment.newInstance();
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mNotificationFragment)
                     .commit();
-        } else if (position == 1) {
+        } else if (position == MENU_FENCES) {
             mFencesFragment = FenceListFragment.newInstance();
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mFencesFragment)
                     .commit();
-            setTitle(mTitle);
-        } else if (position == 2) {
-            mTargetsFragment = TargetListFragment.newInstance("hello", "world");
+        } else if (position == MENU_TARGERTS) {
+            mTargetsFragment = TargetListFragment.newInstance(
+                    TrackerTargetContract.TargetEntry.TABLE_NAME);
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mTargetsFragment)
                     .commit();
-        } else if (position == 3) {
+        } else if (position == MENU_TRACKERS) {
+            mTrackersFragment = TargetListFragment.newInstance(
+                    TrackerTargetContract.TargetEntry.TABLE_NAME);
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, mTrackersFragment)
+                    .commit();
+        } else if (position == MENU_SHARE_ID) {
             mShareIdFragment = ShareIdFragment.newInstance();
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mShareIdFragment)
                     .commit();
-        } else if (position == 4) {
+        } else if (position == MENU_SETTINGS) {
             fragmentManager.beginTransaction()
                     .replace(R.id.container, new SettingsFragment())
                     .commit();
@@ -178,25 +190,20 @@ public class MainActivity extends Activity
     }
 
     public void onSectionAttached(int number) {
-        switch (number) {
-            case 0:
-                mTitle = getString(R.string.title_notifications);
-
-                break;
-            case 1:
-                mTitle = getString(R.string.title_fences);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_targets);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_settings);
-                break;
-            case 4:
-                mTitle = getString(R.string.title_id);
-                break;
-            default:
-                mTitle = getString(R.string.title_activity_main);
+        if (menus==null){
+            menus = new String[]{
+                    getString(R.string.title_notifications),
+                    getString(R.string.title_fences),
+                    getString(R.string.title_targets),
+                    getString(R.string.title_trackers),
+                    getString(R.string.title_share_id),
+                    getString(R.string.title_settings),
+            };
+        }
+        if (number< 0 || number >= menus.length){
+            mTitle = getString(R.string.title_activity_main);
+        } else {
+            mTitle = menus[number];
         }
     }
 

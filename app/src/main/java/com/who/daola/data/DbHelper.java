@@ -14,14 +14,15 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     // Database creation sql statement
-    private static final String CREATE_TABLE_TARGET = "create table "
-            + TargetContract.TargetEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID
-            + " integer primary key autoincrement, "
-            + TargetContract.TargetEntry.COLUMN_NAME + " text not null,"
-            + TargetContract.TargetEntry.COLUMN_REG_ID + " text);";
+    private static final String CREATE_TABLE_TRACKERTARGET = "create table %s ("
+            + TrackerTargetContract.TargetEntry._ID + " integer primary key autoincrement, "
+            + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_NAME + " text not null,"
+            + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_REG_ID + " text,"
+            + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_CONTROL_LEVEL + " integer,"
+            + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_DISABLED + " numeric);";
 
     private static final String CREATE_TABLE_FENCE = "create table "
-            + FenceContract.FenceEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID
+            + FenceContract.FenceEntry.TABLE_NAME + "(" + TrackerTargetContract.TargetEntry._ID
             + " integer primary key autoincrement, "
             + FenceContract.FenceEntry.COLUMN_NAME + " text not null,"
             + FenceContract.FenceEntry.COLUMN_RADIUS + " real,"
@@ -30,23 +31,31 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_TABLE_TRIGGER = "create table "
             + TriggerContract.TriggerEntry.TABLE_NAME + "("
-            + TriggerContract.TriggerEntry.COLUMN_TARGET + " integer not null references " + TargetContract.TargetEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID + "),"
-            + TriggerContract.TriggerEntry.COLUMN_FENCE + " integer not null references " + FenceContract.FenceEntry.TABLE_NAME + "(" + FenceContract.FenceEntry._ID + "), "
+            + TriggerContract.TriggerEntry.COLUMN_TARGET + " integer not null references "
+            + TrackerTargetContract.TargetEntry.TABLE_NAME + "(" + TrackerTargetContract.TargetEntry._ID + "),"
+            + TriggerContract.TriggerEntry.COLUMN_FENCE + " integer not null references "
+            + FenceContract.FenceEntry.TABLE_NAME + "(" + FenceContract.FenceEntry._ID + "), "
             + TriggerContract.TriggerEntry.COLUMN_ENABLED + " integer,"
             + TriggerContract.TriggerEntry.COLUMN_DURATION + " integer,"
             + TriggerContract.TriggerEntry.COLUMN_TRANSITION_TYPE + " integer,"
             + "primary key(" + TriggerContract.TriggerEntry.COLUMN_TARGET + "," + TriggerContract.TriggerEntry.COLUMN_FENCE + "));";
 
     private static final String CREATE_TABLE_NOTIFICATION = "create table "
-            + NotificationContract.NotificationEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID
+            + NotificationContract.NotificationEntry.TABLE_NAME + "(" + TrackerTargetContract.TargetEntry._ID
             + " integer primary key autoincrement, "
-            + NotificationContract.NotificationEntry.COLUMN_TARGET_ID + " integer not null references " + TargetContract.TargetEntry.TABLE_NAME + "(" + TargetContract.TargetEntry._ID + "),"
-            + NotificationContract.NotificationEntry.COLUMN_FENCE_ID + " integer not null references " + FenceContract.FenceEntry.TABLE_NAME + "(" + FenceContract.FenceEntry._ID + "), "
+            + NotificationContract.NotificationEntry.COLUMN_TARGET_ID + " integer not null references "
+            + TrackerTargetContract.TargetEntry.TABLE_NAME + "(" + TrackerTargetContract.TargetEntry._ID + "),"
+            + NotificationContract.NotificationEntry.COLUMN_FENCE_ID + " integer not null references "
+            + FenceContract.FenceEntry.TABLE_NAME + "(" + FenceContract.FenceEntry._ID + "), "
             + NotificationContract.NotificationEntry.COLUMN_TIME + " integer,"
             + NotificationContract.NotificationEntry.COLUMN_TRANSITION_TYPE + " integer);";
 
-    private static final String INSERT_SELF_TARGET_ENTRY = "insert into " + TargetContract.TargetEntry.TABLE_NAME
-            + " ( " + TargetContract.TargetEntry.COLUMN_NAME + " ) values('self')";
+    private static final String INSERT_SELF_TARGET_ENTRY =
+            "insert into " + TrackerTargetContract.TargetEntry.TABLE_NAME + " ( " +
+                    TrackerTargetContract.TargetEntry.COLUMN_NAME + ", " +
+                    TrackerTargetContract.TargetEntry.COLUMN_CONTROL_LEVEL + ", " +
+                    TrackerTargetContract.TargetEntry.COLUMN_DISABLED + ") values('self', " +
+                    TrackerTargetContract.CONTROL_LEVEL_SOLE + ", 0)";
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -54,7 +63,10 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase database) {
-        database.execSQL(CREATE_TABLE_TARGET);
+        database.execSQL(String.format(CREATE_TABLE_TRACKERTARGET,
+                TrackerTargetContract.TrackerEntry.TABLE_NAME));
+        database.execSQL(String.format(CREATE_TABLE_TRACKERTARGET,
+                TrackerTargetContract.TargetEntry.TABLE_NAME));
         database.execSQL(CREATE_TABLE_FENCE);
         database.execSQL(CREATE_TABLE_TRIGGER);
         database.execSQL(CREATE_TABLE_NOTIFICATION);
@@ -67,7 +79,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 "Upgrading database from version " + oldVersion + " to "
                         + newVersion + ", which will destroy all old data");
         db.execSQL("DROP TABLE IF EXISTS " + TriggerContract.TriggerEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + TargetContract.TargetEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TrackerTargetContract.TargetEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + FenceContract.FenceEntry.TABLE_NAME);
         onCreate(db);
     }

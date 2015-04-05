@@ -26,6 +26,7 @@ import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
 import com.who.daola.data.NotificationDataSource;
 import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TrackerTargetContract;
 import com.who.daola.data.Trigger;
 import com.who.daola.data.TriggerDataSource;
 
@@ -96,7 +97,7 @@ public class FenceTriggerService extends Service implements GoogleApiClient.Conn
 
     private void initializeDataSources() {
         if (mTargetDS == null) {
-            mTargetDS = new TargetDataSource(this);
+            mTargetDS = new TargetDataSource(this, TrackerTargetContract.TargetEntry.TABLE_NAME);
         }
         if (mFenceDS == null) {
             mFenceDS = new FenceDataSource(this);

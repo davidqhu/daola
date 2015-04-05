@@ -11,16 +11,18 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.who.daola.data.NotificationDataSource;
-import com.who.daola.data.Target;
 import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TrackerTarget;
 import com.who.daola.data.TriggerDataSource;
 
 import java.sql.SQLException;
 
+import static com.who.daola.data.TrackerTargetContract.TargetEntry.TABLE_NAME;
+
 public class DetailedTargetActivity extends Activity {
 
     public final String TAG = DetailedTargetActivity.class.getName();
-    private Target mTarget;
+    private TrackerTarget mTarget;
     private TargetDataSource mTargetDS;
     private TriggerDataSource mTriggerDS;
     private NotificationDataSource mNotificationDS;
@@ -32,7 +34,7 @@ public class DetailedTargetActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_target);
 
-        mTarget = (Target) getIntent().getSerializableExtra("target");
+        mTarget = (TrackerTarget) getIntent().getSerializableExtra("target");
         mName = (TextView) findViewById(R.id.first_name_textview);
         updateTextViews();
     }
@@ -50,7 +52,7 @@ public class DetailedTargetActivity extends Activity {
 
     private void initializeDataSources() {
         if (mTargetDS == null) {
-            mTargetDS = new TargetDataSource(this);
+            mTargetDS = new TargetDataSource(this, TABLE_NAME);
         }
         if (mTriggerDS == null) {
             mTriggerDS = new TriggerDataSource(this);

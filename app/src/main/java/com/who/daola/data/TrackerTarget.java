@@ -4,11 +4,14 @@ import java.io.Serializable;
 
 /**
  * Created by dave on 9/1/2014.
+ * A Target is something that is being tracked.
  */
-public class Target implements Serializable {
+public class TrackerTarget implements Serializable {
     private long mId;
     private String mName;
     private String mRegId;
+    private boolean mDisabled;
+    private int mControlLevel;
 
     public String getRegId() {
         return mRegId;
@@ -32,6 +35,22 @@ public class Target implements Serializable {
 
     public void setId(long mId) {
         this.mId = mId;
+    }
+
+    public boolean isDisabled() {
+        return mDisabled;
+    }
+
+    public void disable(boolean disabled) {
+        mDisabled = disabled;
+    }
+
+    public int getControlLevel() {
+        return mControlLevel;
+    }
+
+    public void setControlLevel(int controlLevel) {
+        mControlLevel = controlLevel;
     }
 
     @Override
