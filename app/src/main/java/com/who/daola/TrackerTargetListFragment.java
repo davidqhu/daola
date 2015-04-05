@@ -30,9 +30,9 @@ import java.util.List;
  * with a GridView.
  * <p/>
  */
-public class TargetListFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class TrackerTargetListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
-    public static final String TAG = TargetListFragment.class.getName();
+    public static final String TAG = TrackerTargetListFragment.class.getName();
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -60,13 +60,13 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
     private TargetDataSource mDataSource;
 
     // TODO: Rename and change types of parameters
-    public static TargetListFragment newInstance(String tableName) {
+    public static TrackerTargetListFragment newInstance(String tableName) {
 
         if (tableName != TrackerTargetContract.TrackerEntry.TABLE_NAME &&
                 tableName != TrackerTargetContract.TargetEntry.TABLE_NAME) {
             throw new IllegalArgumentException(String.format("Table name %s is invalid.", tableName));
         }
-        TargetListFragment fragment = new TargetListFragment();
+        TrackerTargetListFragment fragment = new TrackerTargetListFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, tableName);
         fragment.setArguments(args);
@@ -77,7 +77,7 @@ public class TargetListFragment extends Fragment implements AbsListView.OnItemCl
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public TargetListFragment() {
+    public TrackerTargetListFragment() {
     }
 
     @Override

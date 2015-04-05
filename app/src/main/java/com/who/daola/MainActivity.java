@@ -31,7 +31,7 @@ import com.who.daola.service.FenceTriggerService;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-        TargetListFragment.OnFragmentInteractionListener,
+        TrackerTargetListFragment.OnFragmentInteractionListener,
         FenceListFragment.OnFragmentInteractionListener,
         NotificationListFragment.OnFragmentInteractionListener,
         ActionMode.Callback,
@@ -60,11 +60,11 @@ public class MainActivity extends Activity
     private CharSequence mTitle;
     private ActionMode mActionMode;
     private int mSelectedItem;
-    private TargetListFragment mTargetsFragment;
+    private TrackerTargetListFragment mTargetsFragment;
     private FenceListFragment mFencesFragment;
     private NotificationListFragment mNotificationFragment;
     private ShareIdFragment mShareIdFragment;
-    private TargetListFragment mTrackersFragment;
+    private TrackerTargetListFragment mTrackersFragment;
 
     private String mRegid;
     private Fragment mActiveFragment;
@@ -166,13 +166,13 @@ public class MainActivity extends Activity
                     .replace(R.id.container, mFencesFragment)
                     .commit();
         } else if (position == MENU_TARGERTS) {
-            mTargetsFragment = TargetListFragment.newInstance(
+            mTargetsFragment = TrackerTargetListFragment.newInstance(
                     TrackerTargetContract.TargetEntry.TABLE_NAME);
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mTargetsFragment)
                     .commit();
         } else if (position == MENU_TRACKERS) {
-            mTrackersFragment = TargetListFragment.newInstance(
+            mTrackersFragment = TrackerTargetListFragment.newInstance(
                     TrackerTargetContract.TargetEntry.TABLE_NAME);
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mTrackersFragment)
