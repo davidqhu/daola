@@ -14,6 +14,7 @@ import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_LATITUDE;
 import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_LONGITUDE;
 import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_NAME;
 import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_RADIUS;
+import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_TRACKER_ID;
 import static com.who.daola.data.FenceContract.FenceEntry.TABLE_NAME;
 import static com.who.daola.data.FenceContract.FenceEntry._ID;
 
@@ -28,7 +29,7 @@ public class FenceDataSource {
     // Database fields
     private SQLiteDatabase database;
     private DbHelper dbHelper;
-    private String[] allColumns = {_ID, COLUMN_NAME,
+    private String[] allColumns = {_ID, COLUMN_NAME, COLUMN_TRACKER_ID,
             COLUMN_RADIUS, COLUMN_LATITUDE, COLUMN_LONGITUDE};
 
     public FenceDataSource(Context context) {
@@ -43,23 +44,28 @@ public class FenceDataSource {
         dbHelper.close();
     }
 
-    public Fence createFence(String name, double radius, double latitude, double longitude) {
+    public Fence createFence(
+            String name, long trackerId, double radius, double latitude, double longitude) {
 
         long insertId = database.insert(TABLE_NAME, null,
-                getCotentValues(name, radius, latitude, longitude));
+                getCotentValues(name, trackerId, radius, latitude, longitude));
 
         return getFence(insertId);
     }
 
-    public Fence updateFence(long id, String name, double radius, double latitude, double longitude) {
-        database.update(TABLE_NAME, getCotentValues(name, radius, latitude, longitude), _ID + "='" + id
+    public Fence updateFence(
+            long id, String name, long trackerId, double radius, double latitude, double longitude) {
+        database.update(TABLE_NAME,
+                getCotentValues(name, trackerId, radius, latitude, longitude), _ID + "='" + id
                 + "'", null);
         return getFence(id);
     }
 
-    private ContentValues getCotentValues(String name, double radius, double latitude, double longitude) {
+    private ContentValues getCotentValues(
+            String name, long trackerId, double radius, double latitude, double longitude) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, name);
+        values.put(COLUMN_TRACKER_ID, trackerId);
         values.put(COLUMN_RADIUS, radius);
         values.put(COLUMN_LATITUDE, latitude);
         values.put(COLUMN_LONGITUDE, longitude);
@@ -108,9 +114,10 @@ public class FenceDataSource {
         Fence fence = new Fence();
         fence.setId(cursor.getLong(0));
         fence.setName(cursor.getString(1));
-        fence.setRadius(cursor.getFloat(2));
-        fence.setLatitude(cursor.getFloat(3));
-        fence.setLongitude(cursor.getFloat(4));
+        fence.setTrackerId(cursor.getLong(2));
+        fence.setRadius(cursor.getFloat(3));
+        fence.setLatitude(cursor.getFloat(4));
+        fence.setLongitude(cursor.getFloat(5));
         return fence;
     }
 }

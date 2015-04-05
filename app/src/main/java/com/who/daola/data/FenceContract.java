@@ -15,5 +15,6 @@ public class FenceContract {
         public static final String COLUMN_RADIUS = "radius";
         public static final String COLUMN_LONGITUDE = "longitude";
         public static final String COLUMN_LATITUDE = "latitude";
+        public static final String COLUMN_TRACKER_ID = "tracker_id";
     }
 }

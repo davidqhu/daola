@@ -54,6 +54,7 @@ public class AddFenceActivity extends Activity implements RadiusPickerDialogFrag
     public static final String RADIUS_ARGUMENT = "radius";
     public static final double DEFAULT_FENCE_RADIUS = 5;
     private final static int PLACE_PICKER_REQUEST = 1;
+    public static final long SELF = 1L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,7 +175,7 @@ public class AddFenceActivity extends Activity implements RadiusPickerDialogFrag
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mFenceDS.createFence(mName.getText().toString(),
+                        mFenceDS.createFence(mName.getText().toString(), SELF,
                                 Double.parseDouble(mRadius.getText().toString()),
                                 mLatitude,
                                 mLongitude);
@@ -208,7 +209,7 @@ public class AddFenceActivity extends Activity implements RadiusPickerDialogFrag
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mFenceDS.updateFence(mFence.getId(), mName.getText().toString(),
+                        mFenceDS.updateFence(mFence.getId(), mName.getText().toString(), SELF,
                                 Double.parseDouble(mRadius.getText().toString()),
                                 mLatitude,
                                 mLongitude);

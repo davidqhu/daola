@@ -25,6 +25,8 @@ public class DbHelper extends SQLiteOpenHelper {
             + FenceContract.FenceEntry.TABLE_NAME + "(" + TrackerTargetContract.TargetEntry._ID
             + " integer primary key autoincrement, "
             + FenceContract.FenceEntry.COLUMN_NAME + " text not null,"
+            + FenceContract.FenceEntry.COLUMN_TRACKER_ID + " integer not null references "
+            + TrackerTargetContract.TrackerEntry.TABLE_NAME + "(" + TrackerTargetContract.TrackerTargetBaseColumns._ID + "),"
             + FenceContract.FenceEntry.COLUMN_RADIUS + " real,"
             + FenceContract.FenceEntry.COLUMN_LATITUDE + " real,"
             + FenceContract.FenceEntry.COLUMN_LONGITUDE + " real);";
@@ -50,8 +52,8 @@ public class DbHelper extends SQLiteOpenHelper {
             + NotificationContract.NotificationEntry.COLUMN_TIME + " integer,"
             + NotificationContract.NotificationEntry.COLUMN_TRANSITION_TYPE + " integer);";
 
-    private static final String INSERT_SELF_TARGET_ENTRY =
-            "insert into " + TrackerTargetContract.TargetEntry.TABLE_NAME + " ( " +
+    private static final String INSERT_SELF_TRACKERTARGET_ENTRY =
+            "insert into %s ( " +
                     TrackerTargetContract.TargetEntry.COLUMN_NAME + ", " +
                     TrackerTargetContract.TargetEntry.COLUMN_CONTROL_LEVEL + ", " +
                     TrackerTargetContract.TargetEntry.COLUMN_DISABLED + ") values('self', " +
@@ -70,7 +72,10 @@ public class DbHelper extends SQLiteOpenHelper {
         database.execSQL(CREATE_TABLE_FENCE);
         database.execSQL(CREATE_TABLE_TRIGGER);
         database.execSQL(CREATE_TABLE_NOTIFICATION);
-        database.execSQL(INSERT_SELF_TARGET_ENTRY);
+        database.execSQL(String.format(INSERT_SELF_TRACKERTARGET_ENTRY,
+                TrackerTargetContract.TrackerEntry.TABLE_NAME));
+        database.execSQL(String.format(INSERT_SELF_TRACKERTARGET_ENTRY,
+                TrackerTargetContract.TargetEntry.TABLE_NAME));
     }
 
     @Override

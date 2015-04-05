@@ -12,6 +12,7 @@ public class Fence implements Serializable {
     private float mRadius;
     private double mLatitude;
     private double mLongitude;
+    private long mTrackerId;
 
     public long getId() {
         return mId;
@@ -51,6 +52,14 @@ public class Fence implements Serializable {
 
     public void setName(String name) {
         this.mName = name;
+    }
+
+    public long getTrackerId() {
+        return mTrackerId;
+    }
+
+    public void setTrackerId(long trackerId) {
+        mTrackerId = trackerId;
     }
 
     @Override

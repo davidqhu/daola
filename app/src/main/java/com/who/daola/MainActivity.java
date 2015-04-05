@@ -173,7 +173,7 @@ public class MainActivity extends Activity
                     .commit();
         } else if (position == MENU_TRACKERS) {
             mTrackersFragment = TrackerTargetListFragment.newInstance(
-                    TrackerTargetContract.TargetEntry.TABLE_NAME);
+                    TrackerTargetContract.TrackerEntry.TABLE_NAME);
             fragmentManager.beginTransaction()
                     .replace(R.id.container, mTrackersFragment)
                     .commit();
