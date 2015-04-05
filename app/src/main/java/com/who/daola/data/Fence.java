@@ -13,6 +13,7 @@ public class Fence implements Serializable {
     private double mLatitude;
     private double mLongitude;
     private long mTrackerId;
+    private boolean mEnable;
 
     public long getId() {
         return mId;
@@ -60,6 +61,14 @@ public class Fence implements Serializable {
 
     public void setTrackerId(long trackerId) {
         mTrackerId = trackerId;
+    }
+
+    public boolean enabled() {
+        return mEnable;
+    }
+
+    public void enable(boolean enable){
+        mEnable = enable;
     }
 
     @Override

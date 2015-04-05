@@ -10,7 +10,7 @@ public class TrackerTarget implements Serializable {
     private long mId;
     private String mName;
     private String mRegId;
-    private boolean mDisabled;
+    private boolean mEnabled;
     private int mControlLevel;
 
     public String getRegId() {
@@ -37,12 +37,12 @@ public class TrackerTarget implements Serializable {
         this.mId = mId;
     }
 
-    public boolean isDisabled() {
-        return mDisabled;
+    public boolean enabled() {
+        return mEnabled;
     }
 
-    public void disable(boolean disabled) {
-        mDisabled = disabled;
+    public void enable(boolean enabled) {
+        mEnabled = enabled;
     }
 
     public int getControlLevel() {

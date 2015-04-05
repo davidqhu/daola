@@ -11,7 +11,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.who.daola.data.NotificationDataSource;
-import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TrackerTargetDataSource;
 import com.who.daola.data.TrackerTarget;
 import com.who.daola.data.TriggerDataSource;
 
@@ -23,7 +23,7 @@ public class DetailedTargetActivity extends Activity {
 
     public final String TAG = DetailedTargetActivity.class.getName();
     private TrackerTarget mTarget;
-    private TargetDataSource mTargetDS;
+    private TrackerTargetDataSource mTargetDS;
     private TriggerDataSource mTriggerDS;
     private NotificationDataSource mNotificationDS;
     private TextView mName;
@@ -52,7 +52,7 @@ public class DetailedTargetActivity extends Activity {
 
     private void initializeDataSources() {
         if (mTargetDS == null) {
-            mTargetDS = new TargetDataSource(this, TABLE_NAME);
+            mTargetDS = new TrackerTargetDataSource(this, TABLE_NAME);
         }
         if (mTriggerDS == null) {
             mTriggerDS = new TriggerDataSource(this);

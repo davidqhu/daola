@@ -16,7 +16,7 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.who.daola.data.TrackerTarget;
-import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TrackerTargetDataSource;
 import com.who.daola.data.TrackerTargetContract;
 
 import java.sql.SQLException;
@@ -53,7 +53,7 @@ public class TrackerTargetListFragment extends Fragment implements AbsListView.O
     private boolean mDataSourceChanged = false;
     private String mTableName;
 
-    private TargetDataSource mDataSource;
+    private TrackerTargetDataSource mDataSource;
 
     // TODO: Rename and change types of parameters
     public static TrackerTargetListFragment newInstance(String tableName) {
@@ -104,7 +104,7 @@ public class TrackerTargetListFragment extends Fragment implements AbsListView.O
 
     private void initializeDataSources() {
         if (mDataSource == null) {
-            mDataSource = new TargetDataSource(getActivity(), mTableName);
+            mDataSource = new TrackerTargetDataSource(getActivity(), mTableName);
         }
         try {
             mDataSource.open();

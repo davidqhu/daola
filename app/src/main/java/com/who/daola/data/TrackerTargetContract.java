@@ -18,7 +18,7 @@ public final class TrackerTargetContract {
 
     public static abstract class TrackerTargetBaseColumns implements BaseColumns {
         public static final String COLUMN_CONTROL_LEVEL = "control_level";
-        public static final String COLUMN_DISABLED = "disabled";
+        public static final String COLUMN_ENABLED = "enabled";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_REG_ID = "regid";
     }

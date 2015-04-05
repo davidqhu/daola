@@ -19,7 +19,7 @@ public class DbHelper extends SQLiteOpenHelper {
             + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_NAME + " text not null,"
             + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_REG_ID + " text,"
             + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_CONTROL_LEVEL + " integer,"
-            + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_DISABLED + " numeric);";
+            + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_ENABLED + " numeric);";
 
     private static final String CREATE_TABLE_FENCE = "create table "
             + FenceContract.FenceEntry.TABLE_NAME + "(" + TrackerTargetContract.TargetEntry._ID
@@ -56,7 +56,7 @@ public class DbHelper extends SQLiteOpenHelper {
             "insert into %s ( " +
                     TrackerTargetContract.TargetEntry.COLUMN_NAME + ", " +
                     TrackerTargetContract.TargetEntry.COLUMN_CONTROL_LEVEL + ", " +
-                    TrackerTargetContract.TargetEntry.COLUMN_DISABLED + ") values('self', " +
+                    TrackerTargetContract.TargetEntry.COLUMN_ENABLED + ") values('self', " +
                     TrackerTargetContract.CONTROL_LEVEL_SOLE + ", 0)";
 
     public DbHelper(Context context) {

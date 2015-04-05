@@ -35,7 +35,7 @@ import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
 import com.who.daola.data.TrackerTarget;
 import com.who.daola.data.TrackerTargetContract;
-import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TrackerTargetDataSource;
 import com.who.daola.data.Trigger;
 import com.who.daola.data.TriggerContract;
 import com.who.daola.data.TriggerDataSource;
@@ -63,7 +63,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     private CheckBox mCheckBoxDwell;
     private EditText mExpirationDateTimeEditText;
     private Activity mActivity;
-    private TargetDataSource mTargetDS;
+    private TrackerTargetDataSource mTargetDS;
     private FenceDataSource mFenceDS;
     private TriggerDataSource mTriggerDS;
     private TrackerTarget mTarget;
@@ -122,7 +122,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
 
     private void initializeDataSources() {
         if (mTargetDS == null) {
-            mTargetDS = new TargetDataSource(this, TABLE_NAME);
+            mTargetDS = new TrackerTargetDataSource(this, TABLE_NAME);
         }
         if (mFenceDS == null) {
             mFenceDS = new FenceDataSource(this);
@@ -191,7 +191,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     @Override
                     protected Void doInBackground(Void... arg0) {
                         TrackerTarget target = mTargetDS.createTarget(mName.getText().toString(),
-                                mTargetRegId, TrackerTargetContract.CONTROL_LEVEL_SHARED, false);
+                                mTargetRegId, TrackerTargetContract.CONTROL_LEVEL_SHARED, true);
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             int transition = TriggerContract.getTransition(
                                     mCheckBoxEnter.isChecked(),
@@ -232,7 +232,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     @Override
                     protected Void doInBackground(Void... arg0) {
                         mTargetDS.updateTarget(mTarget.getId(), mName.getText().toString(),
-                                mTargetRegId, TrackerTargetContract.CONTROL_LEVEL_SHARED, false);
+                                mTargetRegId, TrackerTargetContract.CONTROL_LEVEL_SHARED, true);
                         // A target can have no fence associated to it
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             long fenceId = ((Fence) mFencessSpinner.getSelectedItem()).getId();

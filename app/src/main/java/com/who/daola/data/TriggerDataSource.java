@@ -146,7 +146,7 @@ public class TriggerDataSource {
         Trigger Trigger = new Trigger();
         Trigger.setTarget(cursor.getInt(0));
         Trigger.setFence(cursor.getInt(1));
-        Trigger.setEnabled(cursor.getInt(2) == 0 ? false : true);
+        Trigger.enable(cursor.getInt(2) == 0 ? false : true);
         Trigger.setDuration(cursor.getLong(3));
         Trigger.setTransitionType(cursor.getInt(4));
         return Trigger;

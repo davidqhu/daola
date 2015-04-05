@@ -26,11 +26,11 @@ public class Trigger {
         this.mFence = fence;
     }
 
-    public boolean isEnabled() {
+    public boolean enabled() {
         return mEnabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    public void enable(boolean enabled) {
         this.mEnabled = enabled;
     }
 

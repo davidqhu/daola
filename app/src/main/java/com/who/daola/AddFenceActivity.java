@@ -178,7 +178,7 @@ public class AddFenceActivity extends Activity implements RadiusPickerDialogFrag
                         mFenceDS.createFence(mName.getText().toString(), SELF,
                                 Double.parseDouble(mRadius.getText().toString()),
                                 mLatitude,
-                                mLongitude);
+                                mLongitude, true);
                         return null;
                     }
 
@@ -212,7 +212,7 @@ public class AddFenceActivity extends Activity implements RadiusPickerDialogFrag
                         mFenceDS.updateFence(mFence.getId(), mName.getText().toString(), SELF,
                                 Double.parseDouble(mRadius.getText().toString()),
                                 mLatitude,
-                                mLongitude);
+                                mLongitude, true);
                         return null;
                     }
 

@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_ENABLED;
 import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_LATITUDE;
 import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_LONGITUDE;
 import static com.who.daola.data.FenceContract.FenceEntry.COLUMN_NAME;
@@ -30,7 +31,7 @@ public class FenceDataSource {
     private SQLiteDatabase database;
     private DbHelper dbHelper;
     private String[] allColumns = {_ID, COLUMN_NAME, COLUMN_TRACKER_ID,
-            COLUMN_RADIUS, COLUMN_LATITUDE, COLUMN_LONGITUDE};
+            COLUMN_RADIUS, COLUMN_LATITUDE, COLUMN_LONGITUDE, COLUMN_ENABLED};
 
     public FenceDataSource(Context context) {
         dbHelper = new DbHelper(context);
@@ -44,31 +45,32 @@ public class FenceDataSource {
         dbHelper.close();
     }
 
-    public Fence createFence(
-            String name, long trackerId, double radius, double latitude, double longitude) {
+    public Fence createFence(String name, long trackerId, double radius, double latitude,
+                             double longitude, boolean disabled) {
 
         long insertId = database.insert(TABLE_NAME, null,
-                getCotentValues(name, trackerId, radius, latitude, longitude));
+                getCotentValues(name, trackerId, radius, latitude, longitude, disabled));
 
         return getFence(insertId);
     }
 
-    public Fence updateFence(
-            long id, String name, long trackerId, double radius, double latitude, double longitude) {
+    public Fence updateFence(long id, String name, long trackerId, double radius, double latitude,
+                             double longitude, boolean disabled) {
         database.update(TABLE_NAME,
-                getCotentValues(name, trackerId, radius, latitude, longitude), _ID + "='" + id
-                + "'", null);
+                getCotentValues(name, trackerId, radius, latitude, longitude, disabled),
+                _ID + "='" + id + "'", null);
         return getFence(id);
     }
 
-    private ContentValues getCotentValues(
-            String name, long trackerId, double radius, double latitude, double longitude) {
+    private ContentValues getCotentValues(String name, long trackerId, double radius,
+                                          double latitude, double longitude, boolean disabled) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, name);
         values.put(COLUMN_TRACKER_ID, trackerId);
         values.put(COLUMN_RADIUS, radius);
         values.put(COLUMN_LATITUDE, latitude);
         values.put(COLUMN_LONGITUDE, longitude);
+        values.put(COLUMN_TRACKER_ID, disabled);
         return values;
     }
 
@@ -80,7 +82,7 @@ public class FenceDataSource {
             cursor.moveToFirst();
             Fence fence = cursorToFence(cursor);
             return fence;
-        } finally{
+        } finally {
             cursor.close();
         }
     }
@@ -88,8 +90,7 @@ public class FenceDataSource {
     public void deleteFence(Fence fence) {
         long id = fence.getId();
         Log.i(TAG, "Fence deleted with id: " + id);
-        database.delete(TABLE_NAME, _ID
-                + " = " + id, null);
+        database.delete(TABLE_NAME, _ID + " = " + id, null);
     }
 
     public List<Fence> getAllFences() {
@@ -118,6 +119,7 @@ public class FenceDataSource {
         fence.setRadius(cursor.getFloat(3));
         fence.setLatitude(cursor.getFloat(4));
         fence.setLongitude(cursor.getFloat(5));
+        fence.enable(Boolean.getBoolean(Integer.toString(cursor.getInt(6))));
         return fence;
     }
 }

@@ -19,13 +19,12 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationStatusCodes;
 import com.who.daola.MainActivity;
 import com.who.daola.R;
 import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
 import com.who.daola.data.NotificationDataSource;
-import com.who.daola.data.TargetDataSource;
+import com.who.daola.data.TrackerTargetDataSource;
 import com.who.daola.data.TrackerTargetContract;
 import com.who.daola.data.Trigger;
 import com.who.daola.data.TriggerDataSource;
@@ -61,7 +60,7 @@ public class FenceTriggerService extends Service implements GoogleApiClient.Conn
 
 
     private TriggerDataSource mTriggerDS;
-    private TargetDataSource mTargetDS;
+    private TrackerTargetDataSource mTargetDS;
     private FenceDataSource mFenceDS;
     private NotificationDataSource mNotificationDS;
     private GoogleApiClient mGoogleApiClient;
@@ -97,7 +96,7 @@ public class FenceTriggerService extends Service implements GoogleApiClient.Conn
 
     private void initializeDataSources() {
         if (mTargetDS == null) {
-            mTargetDS = new TargetDataSource(this, TrackerTargetContract.TargetEntry.TABLE_NAME);
+            mTargetDS = new TrackerTargetDataSource(this, TrackerTargetContract.TargetEntry.TABLE_NAME);
         }
         if (mFenceDS == null) {
             mFenceDS = new FenceDataSource(this);
