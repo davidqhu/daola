@@ -140,19 +140,34 @@ public final class GcmHelper {
         editor.commit();
     }
 
+    public static void sendMessage(final String receiverId, final KnowhereDataMessage message) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Sender sender = new Sender(Constants.API_KEY);
+                try {
+                    sender.send(message.toMessage(), receiverId, 0);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute(null, null, null);
+    }
+
     public static void sendTestMessage(final String receiverId, final String message) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 Sender sender = new Sender(Constants.API_KEY);
-                String key = "test2";
-                String data = "all attributes";
+                String key = "test";
                 Message.Builder builder = new Message.Builder();
                 builder.timeToLive(0);
                 builder.addData(key, message);
                 builder.collapseKey("test");
                 builder.delayWhileIdle(true);
                 Message msg = builder.build();
+
                 try {
                     sender.send(msg, receiverId, 0);
                 } catch (IOException e) {

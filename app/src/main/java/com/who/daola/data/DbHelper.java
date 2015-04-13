@@ -5,10 +5,24 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by dave on 9/1/2014.
  */
 public class DbHelper extends SQLiteOpenHelper {
+
+    public static final Map<String, String> tableToObjectMap;
+    static
+    {
+        tableToObjectMap = new HashMap<String, String>();
+        tableToObjectMap.put(TrackerTargetContract.TargetEntry.TABLE_NAME, TrackerTarget.class.getName());
+        tableToObjectMap.put(TrackerTargetContract.TrackerEntry.TABLE_NAME, TrackerTarget.class.getName());
+        tableToObjectMap.put(FenceContract.FenceEntry.TABLE_NAME, Fence.class.getName());
+        tableToObjectMap.put(NotificationContract.NotificationEntry.TABLE_NAME, Notification.class.getName());
+        tableToObjectMap.put(TriggerContract.TriggerEntry.TABLE_NAME, Trigger.class.getName());
+    }
 
     private static final String DATABASE_NAME = "daola.db";
     private static final int DATABASE_VERSION = 1;
@@ -16,6 +30,7 @@ public class DbHelper extends SQLiteOpenHelper {
     // Database creation sql statement
     private static final String CREATE_TABLE_TRACKERTARGET = "create table %s ("
             + TrackerTargetContract.TargetEntry._ID + " integer primary key autoincrement, "
+            + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_REMOTE_ID + " integer, "
             + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_NAME + " text not null,"
             + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_REG_ID + " text,"
             + TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_CONTROL_LEVEL + " integer,"
@@ -29,7 +44,8 @@ public class DbHelper extends SQLiteOpenHelper {
             + TrackerTargetContract.TrackerEntry.TABLE_NAME + "(" + TrackerTargetContract.TrackerTargetBaseColumns._ID + "),"
             + FenceContract.FenceEntry.COLUMN_RADIUS + " real,"
             + FenceContract.FenceEntry.COLUMN_LATITUDE + " real,"
-            + FenceContract.FenceEntry.COLUMN_LONGITUDE + " real);";
+            + FenceContract.FenceEntry.COLUMN_LONGITUDE + " real,"
+            + FenceContract.FenceEntry.COLUMN_ENABLED + " numeric);";
 
     private static final String CREATE_TABLE_TRIGGER = "create table "
             + TriggerContract.TriggerEntry.TABLE_NAME + "("

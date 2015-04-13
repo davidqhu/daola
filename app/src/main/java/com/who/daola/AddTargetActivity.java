@@ -39,6 +39,8 @@ import com.who.daola.data.TrackerTargetDataSource;
 import com.who.daola.data.Trigger;
 import com.who.daola.data.TriggerContract;
 import com.who.daola.data.TriggerDataSource;
+import com.who.daola.gcm.GcmHelper;
+import com.who.daola.gcm.KnowhereDataMessage;
 import com.who.daola.service.FenceTriggerService;
 
 import java.sql.SQLException;
@@ -192,6 +194,15 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     protected Void doInBackground(Void... arg0) {
                         TrackerTarget target = mTargetDS.createTarget(mName.getText().toString(),
                                 mTargetRegId, TrackerTargetContract.CONTROL_LEVEL_SHARED, true);
+                        TrackerTarget tracker = new TrackerTarget();
+                        tracker.setRegId(GcmHelper.REG_ID);
+                        tracker.setName("lei");
+                        tracker.setControlLevel(TrackerTargetContract.CONTROL_LEVEL_SOLE);
+                        tracker.enable(true);
+                        KnowhereDataMessage<TrackerTarget> message =
+                                new KnowhereDataMessage(KnowhereDataMessage.KnowhereMessageType.Add,
+                                        TrackerTargetContract.TrackerEntry.TABLE_NAME, tracker);
+                        GcmHelper.sendMessage(mTargetRegId, message);
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             int transition = TriggerContract.getTransition(
                                     mCheckBoxEnter.isChecked(),
@@ -231,8 +242,9 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                 new AsyncTask<Void, Integer, Void>() {
                     @Override
                     protected Void doInBackground(Void... arg0) {
-                        mTargetDS.updateTarget(mTarget.getId(), mName.getText().toString(),
-                                mTargetRegId, TrackerTargetContract.CONTROL_LEVEL_SHARED, true);
+                        mTargetDS.updateTarget(mTarget.getId(), mTarget.getRemoteId(),
+                                mName.getText().toString(), mTargetRegId,
+                                TrackerTargetContract.CONTROL_LEVEL_SHARED, true);
                         // A target can have no fence associated to it
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             long fenceId = ((Fence) mFencessSpinner.getSelectedItem()).getId();

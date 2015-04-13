@@ -15,6 +15,7 @@ import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_ENABLE
 import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_NAME;
 import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_REG_ID;
 import static com.who.daola.data.TrackerTargetContract.TargetEntry._ID;
+import static com.who.daola.data.TrackerTargetContract.TargetEntry.COLUMN_REMOTE_ID;
 
 /**
  * Target Data Source
@@ -27,12 +28,14 @@ public class TrackerTargetDataSource {
     private SQLiteDatabase database;
     private DbHelper dbHelper;
     private String mTableName;
-    private String[] allColumns = {_ID, COLUMN_NAME, COLUMN_REG_ID, COLUMN_CONTROL_LEVEL, COLUMN_ENABLED};
+    private String[] allColumns = {_ID,
+            COLUMN_REMOTE_ID, COLUMN_NAME, COLUMN_REG_ID, COLUMN_CONTROL_LEVEL, COLUMN_ENABLED};
 
     public TrackerTargetDataSource(Context context, String tableName) {
-        if (tableName != TrackerTargetContract.TrackerEntry.TABLE_NAME &&
-                tableName != TrackerTargetContract.TargetEntry.TABLE_NAME) {
-            throw new IllegalArgumentException(String.format("Table name %s is invalid.", tableName));
+        if (!tableName.equals(TrackerTargetContract.TrackerEntry.TABLE_NAME) &&
+                !tableName.equals(TrackerTargetContract.TargetEntry.TABLE_NAME)) {
+            throw new IllegalArgumentException(
+                    String.format("Table name %s is invalid.", tableName));
         }
         dbHelper = new DbHelper(context);
         mTableName = tableName;
@@ -46,26 +49,40 @@ public class TrackerTargetDataSource {
         dbHelper.close();
     }
 
-    public TrackerTarget createTarget(String name, String regId, int controlLevel, boolean enabled) {
+    public TrackerTarget createTarget(
+            String name, String regId, int controlLevel, boolean enabled) {
 
         long insertId = database.insert(mTableName, null,
-                getCotentValues(name, regId, controlLevel, enabled));
+                getCotentValues(-1L, name, regId, controlLevel, enabled));
 
         return getTarget(insertId);
     }
 
-    public TrackerTarget updateTarget(long id, String name, String regId, int controlLevel, boolean enabled) {
-        database.update(mTableName, getCotentValues(name, regId, controlLevel, enabled), _ID + "='" + id
-                + "'", null);
+    public TrackerTarget createTracker(
+            long remoteId, String name, String regId, int controlLevel, boolean enabled) {
+
+        long insertId = database.insert(mTableName, null,
+                getCotentValues(remoteId, name, regId, controlLevel, enabled));
+
+        return getTarget(insertId);
+    }
+
+    public TrackerTarget updateTarget(
+            long id, long remoteId, String name, String regId, int controlLevel, boolean enabled) {
+        database.update(mTableName,
+                getCotentValues(remoteId, name, regId, controlLevel, enabled),
+                _ID + "='" + id + "'", null);
         return getTarget(id);
     }
 
-    private ContentValues getCotentValues(String name, String regId, int controlLevel, boolean enabled) {
+    private ContentValues getCotentValues(
+            long remoteId, String name, String regId, int controlLevel, boolean enabled) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, name);
         if (regId != null) {
             values.put(COLUMN_REG_ID, regId);
         }
+        values.put(COLUMN_REMOTE_ID, remoteId);
         values.put(COLUMN_CONTROL_LEVEL, controlLevel);
         values.put(COLUMN_ENABLED, enabled);
         return values;
@@ -112,10 +129,11 @@ public class TrackerTargetDataSource {
     private TrackerTarget cursorToTarget(Cursor cursor) {
         TrackerTarget trackerTarget = new TrackerTarget();
         trackerTarget.setId(cursor.getLong(0));
-        trackerTarget.setName(cursor.getString(1));
-        trackerTarget.setRegId(cursor.getString(2));
-        trackerTarget.setControlLevel(cursor.getInt(3));
-        trackerTarget.enable(Boolean.parseBoolean(Integer.toString(cursor.getInt(4))));
+        trackerTarget.setRemoteId(cursor.getLong(1));
+        trackerTarget.setName(cursor.getString(2));
+        trackerTarget.setRegId(cursor.getString(3));
+        trackerTarget.setControlLevel(cursor.getInt(4));
+        trackerTarget.enable(Boolean.parseBoolean(Integer.toString(cursor.getInt(5))));
         return trackerTarget;
     }
 }

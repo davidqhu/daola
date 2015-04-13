@@ -52,7 +52,7 @@ public final class Message implements Serializable {
 
     public static final class Builder {
 
-        private final Map<String, String> data;
+        private Map<String, String> data;
 
         // optional parameters
         private String collapseKey;
@@ -86,6 +86,15 @@ public final class Message implements Serializable {
          */
         public Builder timeToLive(int value) {
             timeToLive = value;
+            return this;
+        }
+
+        /**
+         * Set data.
+         */
+        public Builder setData(Map<String, String> data) {
+            if (data == null) return this;
+            this.data = data;
             return this;
         }
 

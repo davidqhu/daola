@@ -21,6 +21,7 @@ public final class TrackerTargetContract {
         public static final String COLUMN_ENABLED = "enabled";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_REG_ID = "regid";
+        public static final String COLUMN_REMOTE_ID = "remote_id";
     }
 
     /* Inner class that defines the table contents */
