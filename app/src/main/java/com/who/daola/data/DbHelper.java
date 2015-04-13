@@ -68,6 +68,15 @@ public class DbHelper extends SQLiteOpenHelper {
             + NotificationContract.NotificationEntry.COLUMN_TIME + " integer,"
             + NotificationContract.NotificationEntry.COLUMN_TRANSITION_TYPE + " integer);";
 
+
+    private static final String CREATE_TABLE_KNOWHEREMESSAGE = "create table "
+            + KnowhereMessageContract.KnowhereMessageEntry.TABLE_NAME + "(" + TrackerTargetContract.TargetEntry._ID
+            + " integer primary key autoincrement, "
+            + KnowhereMessageContract.KnowhereMessageEntry.COLUMN_MESSAGE_ID + " text not null,"
+            + KnowhereMessageContract.KnowhereMessageEntry.COLUMN_TYPE + " text not null, "
+            + KnowhereMessageContract.KnowhereMessageEntry.COLUMN_PAYLOAD + " text,"
+            + KnowhereMessageContract.KnowhereMessageEntry.COLUMN_TIMESTAMP + " integer not null);";
+
     private static final String INSERT_SELF_TRACKERTARGET_ENTRY =
             "insert into %s ( " +
                     TrackerTargetContract.TargetEntry.COLUMN_NAME + ", " +
@@ -92,6 +101,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 TrackerTargetContract.TrackerEntry.TABLE_NAME));
         database.execSQL(String.format(INSERT_SELF_TRACKERTARGET_ENTRY,
                 TrackerTargetContract.TargetEntry.TABLE_NAME));
+        database.execSQL(CREATE_TABLE_KNOWHEREMESSAGE);
     }
 
     @Override
@@ -101,7 +111,10 @@ public class DbHelper extends SQLiteOpenHelper {
                         + newVersion + ", which will destroy all old data");
         db.execSQL("DROP TABLE IF EXISTS " + TriggerContract.TriggerEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + TrackerTargetContract.TargetEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TrackerTargetContract.TrackerEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + FenceContract.FenceEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + KnowhereMessageContract.KnowhereMessageEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + NotificationContract.NotificationEntry.TABLE_NAME);
         onCreate(db);
     }
 }
