@@ -2,9 +2,10 @@ package com.who.daola.data;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.util.Log;
 
-import com.who.daola.gcm.KnowhereData;
+import com.who.daola.gcm.GcmHelper;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ import java.util.Map;
  * Created by dave on 9/1/2014.
  * A Target is something that is being tracked.
  */
-public class TrackerTarget implements Serializable, KnowhereData {
+public class TrackerTarget extends KnowhereData implements Serializable {
 
     public static final String TAG = TrackerTarget.class.getName();
     private TrackerTargetDataSource mDataSource;
@@ -43,6 +44,7 @@ public class TrackerTarget implements Serializable, KnowhereData {
         this.mName = name;
     }
 
+    @Override
     public long getId() {
         return mId;
     }
@@ -95,15 +97,21 @@ public class TrackerTarget implements Serializable, KnowhereData {
         map.put(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_NAME, mName);
         map.put(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_ENABLED, Boolean.toString(mEnabled));
         map.put(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_CONTROL_LEVEL, Integer.toString(mControlLevel));
+        map.put(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_REMOTE_ID, Long.toString(getRemoteId()));
+        map.put(TABLE_NAME, getTableName());
         return map;
     }
 
     @Override
-    public void fromBundle(Bundle bundle) {
+    public KnowhereData fromBundle(Bundle bundle) {
+        setId(Long.parseLong(bundle.getString(BaseColumns._ID)));
         setRegId(bundle.getString(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_REG_ID));
         setName(bundle.getString(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_NAME));
         enable(Boolean.parseBoolean(bundle.getString(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_ENABLED)));
         setControlLevel(Integer.parseInt(bundle.getString(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_CONTROL_LEVEL)));
+        setRemoteId(bundle.getLong(TrackerTargetContract.TrackerTargetBaseColumns.COLUMN_REMOTE_ID));
+        setTableName(bundle.getString(TABLE_NAME));
+        return this;
     }
 
     @Override
@@ -111,28 +119,27 @@ public class TrackerTarget implements Serializable, KnowhereData {
         try {
             initializeDataSources(context);
 
-            mDataSource.createTarget(getName(), getRegId(),getControlLevel(),enabled());
+            return mDataSource.createTarget(getName(), getRegId(),getControlLevel(),enabled());
         } finally {
             closeDataSources();
         }
-        return null;
     }
 
     @Override
     public KnowhereData update(Context context) {
         try {
             initializeDataSources(context);
+            return mDataSource.updateTarget(getId(), getRemoteId(), getName(), getRegId(), getControlLevel(), enabled());
         } finally {
             closeDataSources();
         }
-        return null;
     }
 
     @Override
     public KnowhereData delete(Context context) {
         try {
             initializeDataSources(context);
-
+            mDataSource.deleteTarget(this);
         } finally {
             closeDataSources();
         }
@@ -155,5 +162,24 @@ public class TrackerTarget implements Serializable, KnowhereData {
         if (mDataSource != null) {
             mDataSource.close();
         }
+    }
+
+    /**
+     * Create a tracker that represents the current user itself.
+     * This tracker will be use to send a message to the remote target to update its tracker table
+     * so that the remote target can be informed that the current user is tracking it.
+     * @param target is the remote target the current user is tracking
+     * @return the current user as a tracker
+     */
+    public static TrackerTarget createRemoteTrackerEntry(TrackerTarget target){
+        TrackerTarget tracker = new TrackerTarget();
+        tracker.setRegId(GcmHelper.REG_ID);
+        // TODO set real user name
+        tracker.setName("lei");
+        tracker.setControlLevel(TrackerTargetContract.CONTROL_LEVEL_SOLE);
+        tracker.setRemoteId(target.getId());
+        tracker.enable(true);
+        tracker.setTableName(TrackerTargetContract.TrackerEntry.TABLE_NAME);
+        return tracker;
     }
 }

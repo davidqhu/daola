@@ -94,8 +94,8 @@ public class TrackerTargetDataSource {
                 null, null, null);
         try {
             cursor.moveToFirst();
-            TrackerTarget people = cursorToTarget(cursor);
-            return people;
+            TrackerTarget target = cursorToTarget(cursor);
+            return target;
         } finally {
             cursor.close();
         }

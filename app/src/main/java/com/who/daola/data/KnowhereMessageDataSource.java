@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.util.Log;
 
 import java.sql.SQLException;
@@ -46,21 +47,39 @@ public class KnowhereMessageDataSource {
                                                  long timeStamp) {
 
         long insertId = database.insert(TABLE_NAME, null,
-                getCotentValues(messageId, type, payload, timeStamp));
+                getContentValues(messageId, type, payload, timeStamp));
 
         return getKnowhereMessage(insertId);
+    }
+
+    public KnowhereMessage createKnowhereMessage(Bundle bundle) {
+        String messageId = bundle.getString(KnowhereMessage.MESSAGE_ID);
+        if (messageId == null || messageId.isEmpty()) {
+            throw new IllegalArgumentException(KnowhereMessage.MESSAGE_ID + " cannot be null");
+        }
+        bundle.remove(KnowhereMessage.MESSAGE_ID);
+        String messageType = bundle.getString(KnowhereMessage.TYPE);
+        if (KnowhereMessage.Type.fromString(messageType)==null) {
+            throw new IllegalArgumentException(KnowhereMessage.TYPE + " is invalid: " + messageType);
+        }
+        bundle.remove(KnowhereMessage.TYPE);
+
+        return createKnowhereMessage(messageId,
+                messageType,
+                KnowhereMessage.getPayloadStringFromBundle(bundle),
+                System.currentTimeMillis());
     }
 
     public KnowhereMessage updateKnowhereMessage(long id, String messageId, String type,
                                                  String payload, long timeStamp) {
         database.update(TABLE_NAME,
-                getCotentValues(messageId, type, payload, timeStamp),
+                getContentValues(messageId, type, payload, timeStamp),
                 _ID + "='" + id + "'", null);
         return getKnowhereMessage(id);
     }
 
-    private ContentValues getCotentValues(String messageId, String type, String payload,
-                                          long timeStamp) {
+    private ContentValues getContentValues(String messageId, String type, String payload,
+                                           long timeStamp) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_MESSAGE_ID, messageId);
         values.put(COLUMN_TYPE, type);
@@ -73,6 +92,19 @@ public class KnowhereMessageDataSource {
     public KnowhereMessage getKnowhereMessage(long id) {
         Cursor cursor = database.query(TABLE_NAME,
                 allColumns, _ID + " = " + id, null,
+                null, null, null);
+        try {
+            cursor.moveToFirst();
+            KnowhereMessage message = cursorToKnowhereMessage(cursor);
+            return message;
+        } finally {
+            cursor.close();
+        }
+    }
+
+    public KnowhereMessage getKnowhereMessage(String messageId){
+        Cursor cursor = database.query(TABLE_NAME,
+                allColumns, COLUMN_MESSAGE_ID + " = '" + messageId + "'", null,
                 null, null, null);
         try {
             cursor.moveToFirst();

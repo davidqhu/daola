@@ -33,6 +33,8 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.who.daola.data.Fence;
 import com.who.daola.data.FenceDataSource;
+import com.who.daola.data.KnowhereMessage;
+import com.who.daola.data.KnowhereMessageDataSource;
 import com.who.daola.data.TrackerTarget;
 import com.who.daola.data.TrackerTargetContract;
 import com.who.daola.data.TrackerTargetDataSource;
@@ -40,13 +42,13 @@ import com.who.daola.data.Trigger;
 import com.who.daola.data.TriggerContract;
 import com.who.daola.data.TriggerDataSource;
 import com.who.daola.gcm.GcmHelper;
-import com.who.daola.gcm.KnowhereDataMessage;
 import com.who.daola.service.FenceTriggerService;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.UUID;
 
 import static com.who.daola.data.TrackerTargetContract.TargetEntry.TABLE_NAME;
 
@@ -68,6 +70,7 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
     private TrackerTargetDataSource mTargetDS;
     private FenceDataSource mFenceDS;
     private TriggerDataSource mTriggerDS;
+    private KnowhereMessageDataSource mKnowhereDS;
     private TrackerTarget mTarget;
     private Fence mFence;
     private List<Trigger> mTriggers;
@@ -132,10 +135,14 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         if (mTriggerDS == null) {
             mTriggerDS = new TriggerDataSource(this);
         }
+        if (mKnowhereDS == null) {
+            mKnowhereDS = new KnowhereMessageDataSource(this);
+        }
         try {
             mTargetDS.open();
             mFenceDS.open();
             mTriggerDS.open();
+            mKnowhereDS.open();
         } catch (SQLException e) {
             Log.e(TAG, "Error opening database: " + e);
             closeDataSources();
@@ -151,6 +158,9 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
         }
         if (mTriggerDS != null) {
             mTriggerDS.close();
+        }
+        if (mKnowhereDS != null) {
+            mKnowhereDS.close();
         }
     }
 
@@ -194,14 +204,11 @@ public class AddTargetActivity extends Activity implements ActionMode.Callback {
                     protected Void doInBackground(Void... arg0) {
                         TrackerTarget target = mTargetDS.createTarget(mName.getText().toString(),
                                 mTargetRegId, TrackerTargetContract.CONTROL_LEVEL_SHARED, true);
-                        TrackerTarget tracker = new TrackerTarget();
-                        tracker.setRegId(GcmHelper.REG_ID);
-                        tracker.setName("lei");
-                        tracker.setControlLevel(TrackerTargetContract.CONTROL_LEVEL_SOLE);
-                        tracker.enable(true);
-                        KnowhereDataMessage<TrackerTarget> message =
-                                new KnowhereDataMessage(KnowhereDataMessage.KnowhereMessageType.Add,
-                                        TrackerTargetContract.TrackerEntry.TABLE_NAME, tracker);
+                        TrackerTarget tracker = TrackerTarget.createRemoteTrackerEntry(target);
+                        KnowhereMessage message = mKnowhereDS.createKnowhereMessage(
+                                UUID.randomUUID().toString(), KnowhereMessage.Type.Add.toString(),
+                                KnowhereMessage.getPayloadStringFromMap(tracker.toMap()),
+                                System.currentTimeMillis());
                         GcmHelper.sendMessage(mTargetRegId, message);
                         if (!mFenceDS.getAllFences().isEmpty()) {
                             int transition = TriggerContract.getTransition(

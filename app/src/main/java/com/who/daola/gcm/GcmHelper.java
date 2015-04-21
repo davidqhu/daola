@@ -9,8 +9,10 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.who.daola.MainActivity;
+import com.who.daola.data.KnowhereMessage;
 import com.who.daola.gcm.server.Constants;
 import com.who.daola.gcm.server.Message;
+import com.who.daola.gcm.server.Result;
 import com.who.daola.gcm.server.Sender;
 
 import java.io.IOException;
@@ -140,13 +142,14 @@ public final class GcmHelper {
         editor.commit();
     }
 
-    public static void sendMessage(final String receiverId, final KnowhereDataMessage message) {
+    public static void sendMessage(final String receiverId, final KnowhereMessage message) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 Sender sender = new Sender(Constants.API_KEY);
                 try {
-                    sender.send(message.toMessage(), receiverId, 0);
+                    Result result = sender.send(message.toMessage(), receiverId, 0);
+                    Log.i(TAG, "Send message result: " + result.toString());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
