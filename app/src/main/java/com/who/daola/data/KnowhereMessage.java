@@ -117,7 +117,6 @@ public class KnowhereMessage implements Serializable {
     }
 
     public static Map<String, String> getMapFromPayload(String payload) throws ParseException {
-        System.out.println("payload: " + payload);
         JSONParser parser = new JSONParser();
         ContainerFactory containerFactory = new ContainerFactory() {
             public List creatArrayContainer() {

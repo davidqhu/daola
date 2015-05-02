@@ -5,7 +5,7 @@ package com.who.daola.gcm.server;
  */
 public final class Constants {
 
-    public static final String API_KEY = "AIzaSyCsk2ucZnFQTLipmBZPlFENFuwrH5TwmF0";
+    public static final String API_KEY = "AIzaSyDXScVcBjzCdLc2Vb1-oyCGA0byu1xDQX0";
 
     /**
      * Endpoint for sending messages.

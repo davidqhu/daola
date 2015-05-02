@@ -10,13 +10,20 @@ import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.who.daola.data.KnowhereData;
+import com.who.daola.data.KnowhereMessage;
 import com.who.daola.gcm.GcmHelper;
+
+import org.json.simple.parser.ParseException;
+
+import java.util.Map;
 
 public class SettingsFragment extends PreferenceFragment {
     private PreferenceScreen mScan;
     private PreferenceScreen mId;
     private EditTextPreference mSendMessage;
-    private static String mScannedId;
+    private static String mScannedData;
+    private static String mReceiverId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,7 +33,7 @@ public class SettingsFragment extends PreferenceFragment {
         addPreferencesFromResource(R.xml.pref_fragment);
 
         mScan = (PreferenceScreen) getPreferenceManager().findPreference("pref_scan_qr_code");
-        mScan.setSummary(mScannedId);
+        mScan.setSummary(mScannedData);
         mScan.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -35,6 +42,7 @@ public class SettingsFragment extends PreferenceFragment {
                 return false;
             }
         });
+
 
         mId = (PreferenceScreen) getPreferenceManager().findPreference("pref_reg_id");
         mId.setSummary(GcmHelper.REG_ID);
@@ -46,7 +54,7 @@ public class SettingsFragment extends PreferenceFragment {
                     public boolean onPreferenceChange(Preference preference, Object newValue) {
                         if (preference.getKey().equals("pref_send_message")) {
                             Toast.makeText(getActivity(), mSendMessage.getEditText().getText().toString(), Toast.LENGTH_LONG).show();
-                            GcmHelper.sendTestMessage(mScannedId, mSendMessage.getEditText().getText().toString());
+                            GcmHelper.sendTestMessage(mReceiverId, mSendMessage.getEditText().getText().toString());
                         }
                         return false;
                     }
@@ -58,8 +66,17 @@ public class SettingsFragment extends PreferenceFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null && scanResult.getContents()!=null) {
-            mScannedId = scanResult.getContents().toString();
-            mScan.setSummary(mScannedId);
+            mScannedData = scanResult.getContents().toString();
+            mScan.setSummary(mScannedData);
+
+            try {
+                if (mScannedData!=null && mReceiverId==null) {
+                    Map<String, String> map = KnowhereMessage.getMapFromPayload(mScannedData);
+                    mReceiverId = map.get("id");
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
