@@ -42,10 +42,12 @@
             android:label="@string/title_activity_add_target"></activity>
         <activity
             android:name=".DetailedTargetActivity"
-            android:label="@string/title_activity_detailed_target"></activity>
+            android:label="@string/title_activity_detailed_target"
+            android:theme="@style/Theme.AppCompat"></activity>
         <activity
             android:name=".AddFenceActivity"
             android:label="@string/title_activity_add_geo_fence"></activity>
+
 
         <service
             android:name=".service.FenceTriggerService"

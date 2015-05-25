@@ -49,4 +49,8 @@
     <string name="set">Set</string>
     <string name="dialog_pick_radius">Set fence radius in meters:</string>
 
+    <string name="target_tab_title_triggers">Triggers</string>
+    <string name="target_tab_title_histories">Histories</string>
+    <string name="target_title_prefix">Target:</string>
+
 </resources>

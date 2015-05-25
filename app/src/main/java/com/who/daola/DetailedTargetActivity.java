@@ -1,46 +1,55 @@
 package com.who.daola;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import com.who.daola.data.NotificationDataSource;
-import com.who.daola.data.TrackerTargetDataSource;
 import com.who.daola.data.TrackerTarget;
+import com.who.daola.data.TrackerTargetDataSource;
 import com.who.daola.data.TriggerDataSource;
 
 import java.sql.SQLException;
 
 import static com.who.daola.data.TrackerTargetContract.TargetEntry.TABLE_NAME;
 
-public class DetailedTargetActivity extends Activity {
+public class DetailedTargetActivity extends ActionBarActivity {
 
     public final String TAG = DetailedTargetActivity.class.getName();
+    public static final int TAB_COUNT = 2;
     private TrackerTarget mTarget;
     private TrackerTargetDataSource mTargetDS;
     private TriggerDataSource mTriggerDS;
     private NotificationDataSource mNotificationDS;
-    private TextView mName;
-
+    private TriggerPaperAdapter mAdapter;
+    private ViewPager mPager;
+    private static CharSequence[] mTabTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_target);
-
         mTarget = (TrackerTarget) getIntent().getSerializableExtra("target");
-        mName = (TextView) findViewById(R.id.first_name_textview);
-        updateTextViews();
-    }
 
-    private void updateTextViews() {
-        mName.setText(mTarget.getName());
+        mAdapter = new TriggerPaperAdapter(getSupportFragmentManager(), mTarget);
+        mPager = (ViewPager) findViewById(R.id.target_pager);
+        mPager.setAdapter(mAdapter);
+
+
+        mTabTitle = new CharSequence[2];
+        mTabTitle[0] = getString(R.string.target_tab_title_triggers);
+        mTabTitle[1] = getString(R.string.target_tab_title_histories);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -88,7 +97,8 @@ public class DetailedTargetActivity extends Activity {
         super.onResume();
         initializeDataSources();
         mTarget = mTargetDS.getTarget(mTarget.getId());
-        updateTextViews();
+        getSupportActionBar().setTitle(getString(R.string.target_title_prefix) +
+                " " + mTarget.getName());
     }
 
     @Override
@@ -129,7 +139,35 @@ public class DetailedTargetActivity extends Activity {
             AlertDialog dialog = builder.create();
             dialog.show();
             return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public static final class TriggerPaperAdapter extends FragmentPagerAdapter {
+        private TrackerTarget mTarget;
+
+        public TriggerPaperAdapter(FragmentManager fm, TrackerTarget target) {
+            super(fm);
+            mTarget = target;
+        }
+
+        @Override
+        public int getCount() {
+            return TAB_COUNT;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return TriggerCardsFragment.newInstance(position, mTarget);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mTabTitle[position];
+        }
     }
 }
