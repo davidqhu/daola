@@ -2,6 +2,7 @@ package com.who.daola.gcm.server;
 
 /**
  * Constants used on GCM service communication.
+ * test
  */
 public final class Constants {
 
